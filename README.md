@@ -25,14 +25,14 @@ Every object in the library has two mirrored APIs: immutable and mutable.
 The goal of the immutable API is to make mutation difficult.
 
 ```dart
-final size = Vector2.zero();
+final size = Vector2(1, 2);
 final bigger = size.scale(2); // Allocates a new vector.
 ```
 
 The goal of the mutable API is it make allocation difficult.
 
 ```dart
-final size = Vector2.zero();
+final size = Vector2(1, 2);
 
 size.modify((MutableVector2 size) {
   size.scale(2); // Mutates the size vector.
