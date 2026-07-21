@@ -128,7 +128,7 @@ void main() {
     test('creates a normalized copy without changing the source', () {
       final vector = Vector2(3, 4);
 
-      final normalized = vector.normalized();
+      final normalized = vector.normalize();
 
       expect(normalized.x, closeTo(0.6, 0.0000001));
       expect(normalized.y, closeTo(0.8, 0.0000001));
@@ -138,7 +138,7 @@ void main() {
     test('normalizes a zero vector to a separate zero vector', () {
       final vector = Vector2.zero();
 
-      final normalized = vector.normalized();
+      final normalized = vector.normalize();
 
       expect(normalized, isNot(same(vector)));
       expectVector2(normalized, 0, 0);
@@ -159,31 +159,28 @@ void main() {
     test('creates a scaled copy without changing the source', () {
       final vector = Vector2(2, 3);
 
-      final scaled = vector.scaled(4);
+      final scaled = vector.scale(4);
 
       expectVector2(scaled, 8, 12);
       expectVector2(vector, 2, 3);
     });
 
-    test(
-      'creates a component-wise multiplied copy without changing its sources',
-      () {
-        final vector = Vector2(2, 3);
-        final other = Vector2(4, 5);
+    test('creates a component-wise multiplied copy without changing its sources', () {
+      final vector = Vector2(2, 3);
+      final other = Vector2(4, 5);
 
-        final multiplied = vector.multiplied(other);
+      final multiplied = vector.multiply(other);
 
-        expectVector2(multiplied, 8, 15);
-        expectVector2(vector, 2, 3);
-        expectVector2(other, 4, 5);
-      },
-    );
+      expectVector2(multiplied, 8, 15);
+      expectVector2(vector, 2, 3);
+      expectVector2(other, 4, 5);
+    });
 
     test('creates a reflected copy without changing its sources', () {
       final vector = Vector2(1, -1);
       final normal = Vector2(0, 1);
 
-      final reflected = vector.reflected(normal);
+      final reflected = vector.reflect(normal);
 
       expectVector2(reflected, 1, 1);
       expectVector2(vector, 1, -1);
@@ -195,7 +192,7 @@ void main() {
       final xRange = Vector2(-1, 1);
       final yRange = Vector2(0, 5);
 
-      final clamped = vector.clamped(xRange, yRange);
+      final clamped = vector.clamp(xRange, yRange);
 
       expectVector2(clamped, 0.5, 5);
       expectVector2(vector, 0.5, 10);
@@ -207,7 +204,7 @@ void main() {
       final vector = Vector2(-2, 10);
       final range = Vector2(1, 5);
 
-      final clamped = vector.clamped(range);
+      final clamped = vector.clamp(range);
 
       expectVector2(clamped, 1, 5);
       expectVector2(vector, -2, 10);
@@ -217,7 +214,7 @@ void main() {
     test('creates a copy clamped between scalar bounds', () {
       final vector = Vector2(-2, 10);
 
-      final clamped = vector.clampedTo(-1, 5);
+      final clamped = vector.clampTo(-1, 5);
 
       expectVector2(clamped, -1, 5);
       expectVector2(vector, -2, 10);
@@ -269,15 +266,21 @@ void main() {
       expect(mutable.isZero, isFalse);
       expect(mutable.isInfinite, isFalse);
       expect(mutable.isNaN, isFalse);
-      expectVector2(mutable.clone(), 8, 6);
-      expectVector2(-mutable, -8, -6);
-      expectVector2(mutable + Vector2(2, 3), 10, 9);
-      expectVector2(mutable - Vector2(2, 3), 6, 3);
-      expectVector2(mutable * 2.5, 20, 15);
-      expectVector2(mutable / 2, 4, 3);
-      expectVector2(mutable.scaled(2), 16, 12);
-      expectVector2(mutable.multiplied(Vector2(2, 3)), 16, 18);
+      expect(mutable.dot(Vector2(2, 3)), 34);
+      expect(mutable.cross(Vector2(2, 3)), 12);
       expectVector2(vector, 8, 6);
+    });
+
+    test('modifies through a closure', () {
+      final vector = Vector2(1, 2);
+
+      vector.modify((mutable) {
+        mutable
+          ..add(Vector2(3, 4))
+          ..scale(2);
+      });
+
+      expectVector2(vector, 8, 12);
     });
 
     test('detects infinite and NaN components', () {
@@ -439,51 +442,15 @@ void main() {
       expectVector2(vector, 0, 0);
     });
 
-    test('offers a normalized copy without changing the mutable source', () {
-      final vector = Vector2(3, 4);
+    test('passes dot and cross products through without changing the source', () {
+      final vector = Vector2(2, 3);
       final mutable = vector.mutate();
+      final other = Vector2(4, 5);
 
-      final normalized = mutable.normalized();
-
-      expect(normalized.x, closeTo(0.6, 0.0000001));
-      expect(normalized.y, closeTo(0.8, 0.0000001));
-      expectVector2(vector, 3, 4);
-    });
-
-    test(
-      'passes dot and cross products through without changing the source',
-      () {
-        final vector = Vector2(2, 3);
-        final mutable = vector.mutate();
-        final other = Vector2(4, 5);
-
-        expect(mutable.dot(other), 23);
-        expect(mutable.cross(other), -2);
-        expectVector2(vector, 2, 3);
-        expectVector2(other, 4, 5);
-      },
-    );
-
-    test('offers a reflected copy without changing the mutable source', () {
-      final vector = Vector2(1, -1);
-      final mutable = vector.mutate();
-      final normal = Vector2(0, 1);
-
-      final reflected = mutable.reflected(normal);
-
-      expectVector2(reflected, 1, 1);
-      expectVector2(vector, 1, -1);
-      expectVector2(normal, 0, 1);
-    });
-
-    test('offers clamped copies without changing the mutable source', () {
-      final vector = Vector2(-2, 10);
-      final mutable = vector.mutate();
-
-      expectVector2(mutable.clamped(Vector2(-1, 1), Vector2(0, 5)), -1, 5);
-      expectVector2(mutable.clamped(Vector2(1, 5)), 1, 5);
-      expectVector2(mutable.clampedTo(-1, 5), -1, 5);
-      expectVector2(vector, -2, 10);
+      expect(mutable.dot(other), 23);
+      expect(mutable.cross(other), -2);
+      expectVector2(vector, 2, 3);
+      expectVector2(other, 4, 5);
     });
 
     test('adds a vector in place', () {

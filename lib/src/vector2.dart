@@ -68,24 +68,21 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 operator -() => .new(-x, -y);
   Vector2 operator +(Vector2 other) => .new(x + other.x, y + other.y);
   Vector2 operator -(Vector2 other) => .new(x - other.x, y - other.y);
-  Vector2 operator *(double value) => scaled(value);
-  Vector2 operator /(double value) => scaled(1.0 / value);
+  Vector2 operator *(double value) => scale(value);
+  Vector2 operator /(double value) => scale(1.0 / value);
   double dot(Vector2 other) => x * other.x + y * other.y;
   double cross(Vector2 other) => x * other.y - y * other.x;
-  Vector2 scaled(double value) => clone()..mutate().scale(value);
-  Vector2 multiplied(Vector2 other) => clone()..mutate().multiply(other);
-  Vector2 normalized() => clone()..mutate().normalize();
-  Vector2 reflected(Vector2 normal) => clone()..mutate().reflect(normal);
-  Vector2 clamped(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
-  Vector2 clampedTo(double min, double max) => clone()..mutate().clampTo(min, max);
+  Vector2 scale(double value) => clone()..mutate().scale(value);
+  Vector2 multiply(Vector2 other) => clone()..mutate().multiply(other);
+  Vector2 normalize() => clone()..mutate().normalize();
+  Vector2 reflect(Vector2 normal) => clone()..mutate().reflect(normal);
+  Vector2 clamp(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
+  Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
 
   @override
   MutableVector2 mutate() => MutableVector2(this);
 
-  Vector2 modify(void Function(MutableVector2 vector) mutation) {
-    mutation(mutate());
-    return this;
-  }
+  void modify(void Function(MutableVector2 vector) mutation) => mutation(mutate());
 
   @override
   String toString() => '($x, $y)';
@@ -105,7 +102,6 @@ extension type MutableVector2(Vector2 vector) {
   double operator [](int index) => vector[index];
   double get x => vector.x;
   double get y => vector.y;
-  Vector2 clone() => vector.clone();
   bool get isZero => vector.isZero;
   bool get isInfinite => vector.isInfinite;
   bool get isNaN => vector.isNaN;
@@ -115,19 +111,8 @@ extension type MutableVector2(Vector2 vector) {
   double distance2(Vector2 other) => vector.distance2(other);
   double angleTo(Vector2 other) => vector.angleTo(other);
   double angleToSigned(Vector2 other) => vector.angleToSigned(other);
-  Vector2 operator -() => .new(-x, -y);
-  Vector2 operator +(Vector2 other) => vector + other;
-  Vector2 operator -(Vector2 other) => vector - other;
-  Vector2 operator *(double value) => vector * value;
-  Vector2 operator /(double value) => vector / value;
   double dot(Vector2 other) => vector.dot(other);
   double cross(Vector2 other) => vector.cross(other);
-  Vector2 scaled(double value) => vector.scaled(value);
-  Vector2 multiplied(Vector2 other) => vector.multiplied(other);
-  Vector2 normalized() => vector.normalized();
-  Vector2 reflected(Vector2 normal) => vector.reflected(normal);
-  Vector2 clamped(Vector2 xRange, [Vector2? yRange]) => vector.clamped(xRange, yRange);
-  Vector2 clampedTo(double min, double max) => vector.clampedTo(min, max);
 
   void operator []=(int index, double value) => vector._storage[index] = value;
   set x(double value) => vector._storage[0] = value;
