@@ -56,6 +56,10 @@ The following classes from `vector_math` are planned. The subset was selected on
 - [ ] Intersections
 - [ ] Benchmarks
 
+Until these items are complete, the package will remain below version 1.0, and all APIs are subject to drastic and potentially uncomfortable change.
+
+After version 1.0, the library will follow semantic versioning and preserve backwards compatibility whenever practical.
+
 ## Contributing
 
 If you find a bug or urgently need a particular unimplemented class, please make an issue.
