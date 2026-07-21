@@ -1,0 +1,5 @@
+- Always use LSP operations (go-to-definition, find-references, hover, etc.) over text-based search when navigating or analyzing code. If the LSP is not available, notify the user and quit.
+- When writing code, do your utmost best to mimic the implementation style in this repository. When in doubt, ask a question about which file to use as an implementation guide.
+- Always follow existing precedent regarding code style, especially naming and spacing conventions. When in doubt, ask a question about which file to use as a style guide.
+- Do not ship workarounds when a root-cause fix is feasible. Always fix the underlying issue directly, even if it requires adjusting the architecture or abstractions.
+- Never modify generated files or built binaries directly. If the appropriate command to rebuild something is not available in the current environment, notify the user and quit.
