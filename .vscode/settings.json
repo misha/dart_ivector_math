@@ -1,0 +1,13 @@
+{
+  "chat.disableAIFeatures": true,
+  "editor.indentSize": 2,
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "files.insertFinalNewline": true,
+  "dart.lineLength": 100,
+  "cSpell.words": [
+    "aabb",
+    "ivector",
+    "reimplementation"
+  ],
+}

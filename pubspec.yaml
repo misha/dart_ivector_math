@@ -1,0 +1,9 @@
+name: ivector_math
+description: Vector math with controlled mutability.
+version: 1.0.0
+repository: https://github.com/misha/dart_ivector_math
+environment:
+  sdk: ^3.12.2
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
