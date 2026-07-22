@@ -29,7 +29,7 @@ final size = Vector2(1, 2);
 final bigger = size.scale(2); // Allocates a new vector.
 ```
 
-The goal of the mutable API is it make allocation difficult.
+The goal of the mutable API is to make allocation difficult.
 
 ```dart
 final size = Vector2(1, 2);
