@@ -34,7 +34,7 @@ class Vector2 implements Mutable<MutableVector2> {
     _storage[1] = random.nextDouble();
   }
 
-  final _storage = Float32List(2);
+  final _storage = Float64List(2);
 
   double operator [](int index) => _storage[index];
   double get x => _storage[0];
@@ -98,7 +98,7 @@ class Vector2 implements Mutable<MutableVector2> {
 }
 
 extension type MutableVector2(Vector2 vector) {
-  Float32List get storage => vector._storage;
+  Float64List get storage => vector._storage;
   double operator [](int index) => vector[index];
   double get x => vector.x;
   double get y => vector.y;
