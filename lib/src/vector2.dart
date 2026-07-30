@@ -35,11 +35,20 @@ class Vector2 implements Mutable<MutableVector2> {
   }
 
   final _storage = Float64List(2);
+  bool _dirty = false;
 
   double operator [](int index) => _storage[index];
   double get x => _storage[0];
   double get y => _storage[1];
   Vector2 clone() => .copy(this);
+
+  /// Whether this vector has been mutated (through [mutate]) since the last
+  /// [clean] call.
+  bool get isDirty => _dirty;
+
+  /// Clears [isDirty] back to false.
+  void clean() => _dirty = false;
+
   bool get isZero => x == 0 && y == 0;
   bool get isInfinite => x.isInfinite || y.isInfinite;
   bool get isNaN => x.isNaN || y.isNaN;
@@ -114,9 +123,20 @@ extension type MutableVector2(Vector2 vector) {
   double dot(Vector2 other) => vector.dot(other);
   double cross(Vector2 other) => vector.cross(other);
 
-  void operator []=(int index, double value) => vector._storage[index] = value;
-  set x(double value) => vector._storage[0] = value;
-  set y(double value) => vector._storage[1] = value;
+  void operator []=(int index, double value) {
+    vector._storage[index] = value;
+    vector._dirty = true;
+  }
+
+  set x(double value) {
+    vector._storage[0] = value;
+    vector._dirty = true;
+  }
+
+  set y(double value) {
+    vector._storage[1] = value;
+    vector._dirty = true;
+  }
 
   void set(Vector2 other) {
     x = other.x;
