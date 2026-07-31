@@ -56,7 +56,7 @@ The following classes from `vector_math` are planned. The subset was selected on
 - [ ] `Vector3`
 - [ ] `Matrix2`
 - [ ] `Matrix3`
-- [ ] `Aabb2`
+- [x] `Aabb2`
 - [ ] `Aabb3`
 - [ ] `Quad`
 - [ ] `Ray`
