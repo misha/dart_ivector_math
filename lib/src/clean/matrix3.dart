@@ -150,6 +150,24 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     return arg;
   }
 
+  /// Transforms [point] and returns the result. Not from `vector_math` —
+  /// unlike [transform2], this leaves [point] itself unchanged. If [out] is
+  /// given, the result is written into it (no allocation) and [out] itself
+  /// is returned; otherwise a new [Vector2] is allocated.
+  Vector2 transform(Vector2 point, [Vector2? out]) {
+    final x = point.x;
+    final y = point.y;
+    final resultX = (_storage[0] * x) + (_storage[3] * y) + _storage[6];
+    final resultY = (_storage[1] * x) + (_storage[4] * y) + _storage[7];
+
+    if (out == null) return .new(resultX, resultY);
+
+    out.mutate()
+      ..x = resultX
+      ..y = resultY;
+    return out;
+  }
+
   /// Rotates [arg] by the absolute rotation of this. Primarily used by AABB
   /// transformation code.
   MutableVector2 absoluteRotate2(MutableVector2 arg) {
@@ -191,6 +209,13 @@ class Matrix3 implements Mutable<MutableMatrix3> {
   /// Returns this matrix multiplied by [arg]: applying the result to a
   /// point is equivalent to applying [arg] first, then this.
   Matrix3 multiply(Matrix3 arg) => clone()..mutate().multiply(arg);
+
+  /// Returns [arg] multiplied by this: applying the result to a point is
+  /// equivalent to applying this first, then [arg]. Not from `vector_math`
+  /// — the natural counterpart to [multiply] for accumulating a chain of
+  /// transforms where each new one applies on the *outside* (e.g. walking
+  /// up a scene graph composing ancestor transforms one at a time).
+  Matrix3 premultiply(Matrix3 arg) => clone()..mutate().premultiply(arg);
 
   Matrix3 operator +(Matrix3 arg) => clone()..mutate().add(arg);
   Matrix3 operator -(Matrix3 arg) => clone()..mutate().sub(arg);
@@ -241,6 +266,8 @@ extension type MutableMatrix3(Matrix3 matrix) {
   double relativeError(Matrix3 correct) => matrix.relativeError(correct);
   double absoluteError(Matrix3 correct) => matrix.absoluteError(correct);
   MutableVector2 transform2(MutableVector2 arg) => matrix.transform2(arg);
+  Vector2 transform(Vector2 point, [Vector2? out]) =>
+      matrix.transform(point, out);
   MutableVector2 absoluteRotate2(MutableVector2 arg) =>
       matrix.absoluteRotate2(arg);
   void copyIntoArray(List<num> array, [int offset = 0]) =>
@@ -405,6 +432,28 @@ extension type MutableMatrix3(Matrix3 matrix) {
     final n00 = argStorage[0], n01 = argStorage[3], n02 = argStorage[6];
     final n10 = argStorage[1], n11 = argStorage[4], n12 = argStorage[7];
     final n20 = argStorage[2], n21 = argStorage[5], n22 = argStorage[8];
+    storage[0] = (m00 * n00) + (m01 * n10) + (m02 * n20);
+    storage[3] = (m00 * n01) + (m01 * n11) + (m02 * n21);
+    storage[6] = (m00 * n02) + (m01 * n12) + (m02 * n22);
+    storage[1] = (m10 * n00) + (m11 * n10) + (m12 * n20);
+    storage[4] = (m10 * n01) + (m11 * n11) + (m12 * n21);
+    storage[7] = (m10 * n02) + (m11 * n12) + (m12 * n22);
+    storage[2] = (m20 * n00) + (m21 * n10) + (m22 * n20);
+    storage[5] = (m20 * n01) + (m21 * n11) + (m22 * n21);
+    storage[8] = (m20 * n02) + (m21 * n12) + (m22 * n22);
+  }
+
+  /// Premultiplies this by [arg]: sets this to `arg * this`. Not from
+  /// `vector_math` — see [Matrix3.premultiply].
+  void premultiply(Matrix3 arg) {
+    final storage = matrix._storage;
+    final argStorage = arg._storage;
+    final m00 = argStorage[0], m01 = argStorage[3], m02 = argStorage[6];
+    final m10 = argStorage[1], m11 = argStorage[4], m12 = argStorage[7];
+    final m20 = argStorage[2], m21 = argStorage[5], m22 = argStorage[8];
+    final n00 = storage[0], n01 = storage[3], n02 = storage[6];
+    final n10 = storage[1], n11 = storage[4], n12 = storage[7];
+    final n20 = storage[2], n21 = storage[5], n22 = storage[8];
     storage[0] = (m00 * n00) + (m01 * n10) + (m02 * n20);
     storage[3] = (m00 * n01) + (m01 * n11) + (m02 * n21);
     storage[6] = (m00 * n02) + (m01 * n12) + (m02 * n22);

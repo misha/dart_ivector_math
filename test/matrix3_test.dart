@@ -130,6 +130,34 @@ void main() {
     });
 
     test(
+      'transforms a point into a new Vector2 without changing the source',
+      () {
+        final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+        final point = Vector2(1, 1);
+
+        final transformed = matrix.transform(point);
+
+        expectVector2(transformed, 12, 23);
+        expectVector2(point, 1, 1);
+      },
+    );
+
+    test(
+      'transforms a point into a given out Vector2 without allocating a new one',
+      () {
+        final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+        final point = Vector2(1, 1);
+        final out = Vector2.zero();
+
+        final transformed = matrix.transform(point, out);
+
+        expect(identical(transformed, out), isTrue);
+        expectVector2(out, 12, 23);
+        expectVector2(point, 1, 1);
+      },
+    );
+
+    test(
       'rotates a 2D point by the absolute rotation, ignoring translation',
       () {
         final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
@@ -198,6 +226,20 @@ void main() {
       expectMatrix3(scaleMatrix, 2, 0, 0, 0, 2, 0, 0, 0, 1);
     });
 
+    test(
+      'creates a premultiplied copy equivalent to the other multiply order',
+      () {
+        final translate = Matrix3(1, 0, 0, 0, 1, 0, 5, 0, 1);
+        final scaleMatrix = Matrix3(2, 0, 0, 0, 2, 0, 0, 0, 1);
+
+        final combined = scaleMatrix.premultiply(translate);
+
+        expectMatrix3(combined, 2, 0, 0, 0, 2, 0, 5, 0, 1);
+        expectMatrix3(translate, 1, 0, 0, 0, 1, 0, 5, 0, 1);
+        expectMatrix3(scaleMatrix, 2, 0, 0, 0, 2, 0, 0, 0, 1);
+      },
+    );
+
     test('adds without changing its sources', () {
       final a = Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
       final b = Matrix3(9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -256,6 +298,7 @@ void main() {
       expect(mutable.isIdentity(), isFalse);
       expect(mutable.isZero(), isFalse);
       expect(mutable.infinityNorm(), matrix.infinityNorm());
+      expect(mutable.transform(Vector2(1, 1)), matrix.transform(Vector2(1, 1)));
       expectMatrix3(matrix, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     });
 
@@ -422,6 +465,22 @@ void main() {
       final matrix = Matrix3.rotationZ(pi / 2);
 
       matrix.mutate().multiply(matrix);
+
+      expectMatrix3(matrix, -1, 0, 0, 0, -1, 0, 0, 0, 1);
+    });
+
+    test('premultiplies in place', () {
+      final matrix = Matrix3(2, 0, 0, 0, 2, 0, 0, 0, 1);
+
+      matrix.mutate().premultiply(Matrix3(1, 0, 0, 0, 1, 0, 5, 0, 1));
+
+      expectMatrix3(matrix, 2, 0, 0, 0, 2, 0, 5, 0, 1);
+    });
+
+    test('premultiplies by itself safely', () {
+      final matrix = Matrix3.rotationZ(pi / 2);
+
+      matrix.mutate().premultiply(matrix);
 
       expectMatrix3(matrix, -1, 0, 0, 0, -1, 0, 0, 0, 1);
     });
