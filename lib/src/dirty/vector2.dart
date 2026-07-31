@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:ivector_math/src/mutable.dart';
+import 'mutable.dart';
 
 class Vector2 implements Mutable<MutableVector2> {
   Vector2.zero();
@@ -35,19 +35,18 @@ class Vector2 implements Mutable<MutableVector2> {
   }
 
   final _storage = Float64List(2);
-  bool _dirty = false;
+  bool _dirty = false; // @dirty
 
   double operator [](int index) => _storage[index];
   double get x => _storage[0];
   double get y => _storage[1];
   Vector2 clone() => .copy(this);
 
-  /// Whether this vector has been mutated (through [mutate]) since the last
-  /// [clean] call.
-  bool get isDirty => _dirty;
+  /// Whether this vector has been mutated (through [mutate]) since the last [clean] call. @dirty
+  bool get isDirty => _dirty; // @dirty
 
-  /// Clears [isDirty] back to false.
-  void clean() => _dirty = false;
+  /// Clears [isDirty] back to false. @dirty
+  void clean() => _dirty = false; // @dirty
 
   bool get isZero => x == 0 && y == 0;
   bool get isInfinite => x.isInfinite || y.isInfinite;
@@ -125,17 +124,17 @@ extension type MutableVector2(Vector2 vector) {
 
   void operator []=(int index, double value) {
     vector._storage[index] = value;
-    vector._dirty = true;
+    vector._dirty = true; // @dirty
   }
 
   set x(double value) {
     vector._storage[0] = value;
-    vector._dirty = true;
+    vector._dirty = true; // @dirty
   }
 
   set y(double value) {
     vector._storage[1] = value;
-    vector._dirty = true;
+    vector._dirty = true; // @dirty
   }
 
   void set(Vector2 other) {

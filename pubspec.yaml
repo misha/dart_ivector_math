@@ -4,6 +4,8 @@ version: 0.0.3
 repository: https://github.com/misha/dart_ivector_math
 environment:
   sdk: ^3.12.2
+scripts:
+  generate-clean: scripts/generate_clean.sh
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.25.6
