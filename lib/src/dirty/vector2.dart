@@ -42,7 +42,7 @@ class Vector2 implements Mutable<MutableVector2> {
   double get y => _storage[1];
   Vector2 clone() => .copy(this);
 
-  /// Whether this vector has been mutated (through [mutate]) since the last [clean] call. @dirty
+  /// Whether this vector may have been mutated since the last [clean] call. @dirty
   bool get isDirty => _dirty; // @dirty
 
   /// Clears [isDirty] back to false. @dirty
@@ -88,9 +88,14 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
 
   @override
-  MutableVector2 mutate() => MutableVector2(this);
+  MutableVector2 mutate() {
+    _dirty = true; // @dirty
+    return MutableVector2(this);
+  }
 
-  void modify(void Function(MutableVector2 vector) mutation) => mutation(mutate());
+  void modify(void Function(MutableVector2 vector) mutation) {
+    mutation(mutate());
+  }
 
   @override
   String toString() => '($x, $y)';
@@ -124,17 +129,14 @@ extension type MutableVector2(Vector2 vector) {
 
   void operator []=(int index, double value) {
     vector._storage[index] = value;
-    vector._dirty = true; // @dirty
   }
 
   set x(double value) {
     vector._storage[0] = value;
-    vector._dirty = true; // @dirty
   }
 
   set y(double value) {
     vector._storage[1] = value;
-    vector._dirty = true; // @dirty
   }
 
   void set(Vector2 other) {

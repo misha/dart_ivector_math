@@ -85,10 +85,13 @@ class Vector2 implements Mutable<MutableVector2> {
       clone()..mutate().clampTo(min, max);
 
   @override
-  MutableVector2 mutate() => MutableVector2(this);
+  MutableVector2 mutate() {
+    return MutableVector2(this);
+  }
 
-  void modify(void Function(MutableVector2 vector) mutation) =>
-      mutation(mutate());
+  void modify(void Function(MutableVector2 vector) mutation) {
+    mutation(mutate());
+  }
 
   @override
   String toString() => '($x, $y)';
