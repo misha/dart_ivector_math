@@ -35,18 +35,14 @@ class Vector2 implements Mutable<MutableVector2> {
   }
 
   final _storage = Float64List(2);
-  bool _dirty = false; // @dirty
+
+  /// Bare, unowned dirty bitmask. [mutate] sets every bit. @dirty
+  int dirty = 0; // @dirty
 
   double operator [](int index) => _storage[index];
   double get x => _storage[0];
   double get y => _storage[1];
   Vector2 clone() => .copy(this);
-
-  /// Whether this vector may have been mutated since the last [clean] call. @dirty
-  bool get isDirty => _dirty; // @dirty
-
-  /// Clears [isDirty] back to false. @dirty
-  void clean() => _dirty = false; // @dirty
 
   bool get isZero => x == 0 && y == 0;
   bool get isInfinite => x.isInfinite || y.isInfinite;
@@ -89,7 +85,7 @@ class Vector2 implements Mutable<MutableVector2> {
 
   @override
   MutableVector2 mutate() {
-    _dirty = true; // @dirty
+    dirty = -1; // @dirty
     return MutableVector2(this);
   }
 

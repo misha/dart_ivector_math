@@ -46,7 +46,7 @@ size.modify((MutableVector2 size) {
 `ivector_math` ships with multiple entrypoints.
 
 - `ivector_math.dart` is the default entrypoint. Types have no additional features beyond controlled mutability.
-- `ivector_math_dirty.dart` is an alternate entrypoint whose types carry a dirty bit. Whenever the type is mutated, `isDirty` turns true until the next `clean()` call, enabling high-performance change detection.
+- `ivector_math_dirty.dart` is an alternate entrypoint whose types carry a bare, exposed `dirty` integer. `mutate()` sets every bit, and nothing in this library ever clears. This is deliberately unopinionated. Systems are welcome to chop up the bits as they see fit.
 
 ## Progress
 

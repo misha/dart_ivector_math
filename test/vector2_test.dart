@@ -165,16 +165,19 @@ void main() {
       expectVector2(vector, 2, 3);
     });
 
-    test('creates a component-wise multiplied copy without changing its sources', () {
-      final vector = Vector2(2, 3);
-      final other = Vector2(4, 5);
+    test(
+      'creates a component-wise multiplied copy without changing its sources',
+      () {
+        final vector = Vector2(2, 3);
+        final other = Vector2(4, 5);
 
-      final multiplied = vector.multiply(other);
+        final multiplied = vector.multiply(other);
 
-      expectVector2(multiplied, 8, 15);
-      expectVector2(vector, 2, 3);
-      expectVector2(other, 4, 5);
-    });
+        expectVector2(multiplied, 8, 15);
+        expectVector2(vector, 2, 3);
+        expectVector2(other, 4, 5);
+      },
+    );
 
     test('creates a reflected copy without changing its sources', () {
       final vector = Vector2(1, -1);
@@ -442,16 +445,19 @@ void main() {
       expectVector2(vector, 0, 0);
     });
 
-    test('passes dot and cross products through without changing the source', () {
-      final vector = Vector2(2, 3);
-      final mutable = vector.mutate();
-      final other = Vector2(4, 5);
+    test(
+      'passes dot and cross products through without changing the source',
+      () {
+        final vector = Vector2(2, 3);
+        final mutable = vector.mutate();
+        final other = Vector2(4, 5);
 
-      expect(mutable.dot(other), 23);
-      expect(mutable.cross(other), -2);
-      expectVector2(vector, 2, 3);
-      expectVector2(other, 4, 5);
-    });
+        expect(mutable.dot(other), 23);
+        expect(mutable.cross(other), -2);
+        expectVector2(vector, 2, 3);
+        expectVector2(other, 4, 5);
+      },
+    );
 
     test('adds a vector in place', () {
       final vector = Vector2(1, 2);
