@@ -41,6 +41,13 @@ size.modify((MutableVector2 size) {
 
 `ivector_math` always assigns these roles to two distinct classes, such as `Vector2` and `MutableVector2`. You can always check which mode you're in by looking at the type of the object.
 
+## Entrypoints
+
+`ivector_math` ships with multiple entrypoints.
+
+- `ivector_math.dart` is the default entrypoint. Types have no additional features beyond controlled mutability.
+- `ivector_math_dirty.dart` is an alternate entrypoint whose types carry a dirty bit. Whenever the type is mutated, `isDirty` turns true until the next `clean()` call, enabling high-performance change detection.
+
 ## Progress
 
 The following classes from `vector_math` are planned. The subset was selected on the basis of my personal usage of `vector_math` for 2D game development in Dart.
