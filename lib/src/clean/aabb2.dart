@@ -6,8 +6,7 @@ import 'dart:typed_data';
 import 'mutable.dart';
 import 'vector2.dart';
 
-/// Defines a 2-dimensional axis-aligned bounding box between a [min] and a
-/// [max] position.
+/// Defines a 2-dimensional, axis-aligned bounding box.
 class Aabb2 implements Mutable<MutableAabb2> {
   Aabb2.zero();
 
@@ -55,25 +54,33 @@ class Aabb2 implements Mutable<MutableAabb2> {
 
   /// Whether this fully contains [other].
   bool containsAabb2(Aabb2 other) =>
-      minX < other.minX &&
+      minX < other.minX && //
       minY < other.minY &&
       maxX > other.maxX &&
       maxY > other.maxY;
 
   /// Whether this contains [point].
   bool containsVector2(Vector2 point) =>
-      minX < point.x && minY < point.y && maxX > point.x && maxY > point.y;
+      minX < point.x && //
+      minY < point.y &&
+      maxX > point.x &&
+      maxY > point.y;
+
+  /// Whether this and [other] overlap on the x axis.
+  bool overlapsX(Aabb2 other) => minX <= other.maxX && maxX >= other.minX;
+
+  /// Whether this and [other] overlap on the y axis.
+  bool overlapsY(Aabb2 other) => minY <= other.maxY && maxY >= other.minY;
 
   /// Whether this overlaps [other].
-  bool intersectsWithAabb2(Aabb2 other) =>
-      minX <= other.maxX &&
-      minY <= other.maxY &&
-      maxX >= other.minX &&
-      maxY >= other.minY;
+  bool intersectsWithAabb2(Aabb2 other) => overlapsX(other) && overlapsY(other);
 
   /// Whether this overlaps [point].
   bool intersectsWithVector2(Vector2 point) =>
-      minX <= point.x && minY <= point.y && maxX >= point.x && maxY >= point.y;
+      minX <= point.x && //
+      minY <= point.y &&
+      maxX >= point.x &&
+      maxY >= point.y;
 
   @override
   MutableAabb2 mutate() {
@@ -108,6 +115,8 @@ extension type MutableAabb2(Aabb2 aabb) {
   double get maxY => aabb.maxY;
   bool containsAabb2(Aabb2 other) => aabb.containsAabb2(other);
   bool containsVector2(Vector2 point) => aabb.containsVector2(point);
+  bool overlapsX(Aabb2 other) => aabb.overlapsX(other);
+  bool overlapsY(Aabb2 other) => aabb.overlapsY(other);
   bool intersectsWithAabb2(Aabb2 other) => aabb.intersectsWithAabb2(other);
   bool intersectsWithVector2(Vector2 point) =>
       aabb.intersectsWithVector2(point);

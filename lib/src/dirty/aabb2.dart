@@ -67,12 +67,14 @@ class Aabb2 implements Mutable<MutableAabb2> {
       maxX > point.x &&
       maxY > point.y;
 
+  /// Whether this and [other] overlap on the x axis.
+  bool overlapsX(Aabb2 other) => minX <= other.maxX && maxX >= other.minX;
+
+  /// Whether this and [other] overlap on the y axis.
+  bool overlapsY(Aabb2 other) => minY <= other.maxY && maxY >= other.minY;
+
   /// Whether this overlaps [other].
-  bool intersectsWithAabb2(Aabb2 other) =>
-      minX <= other.maxX && //
-      minY <= other.maxY &&
-      maxX >= other.minX &&
-      maxY >= other.minY;
+  bool intersectsWithAabb2(Aabb2 other) => overlapsX(other) && overlapsY(other);
 
   /// Whether this overlaps [point].
   bool intersectsWithVector2(Vector2 point) =>
@@ -115,8 +117,11 @@ extension type MutableAabb2(Aabb2 aabb) {
   double get maxY => aabb.maxY;
   bool containsAabb2(Aabb2 other) => aabb.containsAabb2(other);
   bool containsVector2(Vector2 point) => aabb.containsVector2(point);
+  bool overlapsX(Aabb2 other) => aabb.overlapsX(other);
+  bool overlapsY(Aabb2 other) => aabb.overlapsY(other);
   bool intersectsWithAabb2(Aabb2 other) => aabb.intersectsWithAabb2(other);
-  bool intersectsWithVector2(Vector2 point) => aabb.intersectsWithVector2(point);
+  bool intersectsWithVector2(Vector2 point) =>
+      aabb.intersectsWithVector2(point);
 
   void operator []=(int index, double value) {
     aabb._storage[index] = value;

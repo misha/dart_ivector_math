@@ -95,6 +95,20 @@ void main() {
       expect(aabb.containsVector2(Vector2(10, 10)), isFalse);
     });
 
+    test('detects per-axis overlap independently', () {
+      final a = Aabb2(Vector2(0, 0), Vector2(2, 2));
+      final sameX = Aabb2(Vector2(1, 5), Vector2(3, 6));
+      final sameY = Aabb2(Vector2(5, 1), Vector2(6, 3));
+      final neither = Aabb2(Vector2(5, 5), Vector2(6, 6));
+
+      expect(a.overlapsX(sameX), isTrue);
+      expect(a.overlapsY(sameX), isFalse);
+      expect(a.overlapsX(sameY), isFalse);
+      expect(a.overlapsY(sameY), isTrue);
+      expect(a.overlapsX(neither), isFalse);
+      expect(a.overlapsY(neither), isFalse);
+    });
+
     test('detects intersection with another AABB', () {
       final a = Aabb2(Vector2(0, 0), Vector2(2, 2));
       final b = Aabb2(Vector2(1, 1), Vector2(3, 3));
@@ -143,6 +157,8 @@ void main() {
       expect(mutable.maxX, 3);
       expect(mutable.maxY, 4);
       expect(mutable.containsVector2(Vector2(2, 3)), isTrue);
+      expect(mutable.overlapsX(Aabb2(Vector2(2, 5), Vector2(4, 6))), isTrue);
+      expect(mutable.overlapsY(Aabb2(Vector2(5, 5), Vector2(6, 6))), isFalse);
       expect(
         mutable.intersectsWithAabb2(Aabb2(Vector2(2, 2), Vector2(5, 5))),
         isTrue,
