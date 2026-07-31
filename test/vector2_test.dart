@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:ivector_math/ivector_math.dart';
+import 'package:ivector_math/ivector_math_dirty.dart';
 import 'package:test/test.dart';
 
 import 'support/matchers.dart';
