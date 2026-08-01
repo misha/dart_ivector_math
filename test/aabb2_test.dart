@@ -28,7 +28,7 @@ void main() {
       final original = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
       final copy = Aabb2.copy(original);
 
-      original.mutate().setMinMax(9, 9, 9, 9);
+      original.mutate().setValues(9, 9, 9, 9);
 
       expectAabb2(copy, 1, 2, 3, 4);
     });
@@ -60,7 +60,7 @@ void main() {
       final aabb = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
       final clone = aabb.clone();
 
-      aabb.mutate().setMinMax(9, 9, 9, 9);
+      aabb.mutate().setValues(9, 9, 9, 9);
 
       expectAabb2(clone, 1, 2, 3, 4);
     });
@@ -164,7 +164,7 @@ void main() {
     test('modifies through a closure', () {
       final aabb = Aabb2();
 
-      aabb.modify((mutable) => mutable.setMinMax(1, 2, 3, 4));
+      aabb.modify((mutable) => mutable.setValues(1, 2, 3, 4));
 
       expectAabb2(aabb, 1, 2, 3, 4);
     });
@@ -173,8 +173,8 @@ void main() {
       final aabb = Aabb2();
       final other = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
 
-      aabb.mutate().set(other);
-      other.mutate().setMinMax(9, 9, 9, 9);
+      aabb.mutate().setFrom(other);
+      other.mutate().setValues(9, 9, 9, 9);
 
       expectAabb2(aabb, 1, 2, 3, 4);
     });
@@ -182,7 +182,7 @@ void main() {
     test('sets both corners from raw components', () {
       final aabb = Aabb2();
 
-      aabb.mutate().setMinMax(1, 2, 3, 4);
+      aabb.mutate().setValues(1, 2, 3, 4);
 
       expectAabb2(aabb, 1, 2, 3, 4);
     });

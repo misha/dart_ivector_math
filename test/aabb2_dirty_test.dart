@@ -10,7 +10,7 @@ void main() {
     test('mutate sets every bit', () {
       final aabb = Aabb2();
 
-      aabb.mutate().setMinMax(3, 0, 0, 0);
+      aabb.mutate().setValues(3, 0, 0, 0);
 
       expect(aabb.dirty, -1);
     });
@@ -31,7 +31,7 @@ void main() {
       const second = 1 << 1;
       final aabb = Aabb2();
 
-      aabb.mutate().setMinMax(3, 0, 0, 0);
+      aabb.mutate().setValues(3, 0, 0, 0);
       aabb.dirty &= ~first;
 
       expect(aabb.dirty & first, 0);
@@ -46,9 +46,9 @@ void main() {
       const bit = 1 << 0;
       final aabb = Aabb2();
 
-      aabb.mutate().setMinMax(3, 0, 0, 0);
+      aabb.mutate().setValues(3, 0, 0, 0);
       aabb.dirty &= ~bit;
-      aabb.mutate().setMinMax(3, 4, 0, 0);
+      aabb.mutate().setValues(3, 4, 0, 0);
 
       expect(aabb.dirty & bit, isNot(0));
     });

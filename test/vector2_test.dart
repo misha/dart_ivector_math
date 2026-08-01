@@ -335,7 +335,7 @@ void main() {
     test('sets both components from another vector', () {
       final vector = Vector2.zero();
 
-      vector.mutate().set(Vector2(1, 2));
+      vector.mutate().setFrom(Vector2(1, 2));
 
       expectVector2(vector, 1, 2);
     });
@@ -343,7 +343,7 @@ void main() {
     test('splats one value across both components', () {
       final vector = Vector2.zero();
 
-      vector.mutate().splat(2.5);
+      vector.mutate().setAll(2.5);
 
       expectVector2(vector, 2.5, 2.5);
     });

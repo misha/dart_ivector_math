@@ -49,16 +49,24 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     _storage.setAll(0, other._storage);
   }
 
-  factory Matrix3.identity() => Matrix3.zero()..mutate().setIdentity();
+  factory Matrix3.identity() =>
+      Matrix3.zero() //
+        ..mutate().setIdentity();
 
   /// Rotation of [radians] around the x axis.
-  factory Matrix3.rotationX(double radians) => Matrix3.zero()..mutate().setRotationX(radians);
+  factory Matrix3.rotationX(double radians) =>
+      Matrix3.zero() //
+        ..mutate().setRotationX(radians);
 
   /// Rotation of [radians] around the y axis.
-  factory Matrix3.rotationY(double radians) => Matrix3.zero()..mutate().setRotationY(radians);
+  factory Matrix3.rotationY(double radians) =>
+      Matrix3.zero() //
+        ..mutate().setRotationY(radians);
 
   /// Rotation of [radians] around the z axis.
-  factory Matrix3.rotationZ(double radians) => Matrix3.zero()..mutate().setRotationZ(radians);
+  factory Matrix3.rotationZ(double radians) =>
+      Matrix3.zero() //
+        ..mutate().setRotationZ(radians);
 
   final _storage = Float64List(9);
 
@@ -94,15 +102,11 @@ class Matrix3 implements Mutable<MutableMatrix3> {
 
   /// Is this the identity matrix?
   bool isIdentity() =>
-      _storage[0] == 1.0 &&
-      _storage[1] == 0.0 &&
-      _storage[2] == 0.0 &&
-      _storage[3] == 0.0 &&
-      _storage[4] == 1.0 &&
-      _storage[5] == 0.0 &&
-      _storage[6] == 0.0 &&
-      _storage[7] == 0.0 &&
-      _storage[8] == 1.0;
+      // dart format off
+      _storage[0] == 1.0 && _storage[1] == 0.0 && _storage[2] == 0.0 &&
+      _storage[3] == 0.0 && _storage[4] == 1.0 && _storage[5] == 0.0 &&
+      _storage[6] == 0.0 && _storage[7] == 0.0 && _storage[8] == 1.0;
+      // dart format on
 
   /// Is this the zero matrix?
   bool isZero() => _storage.every((value) => value == 0.0);
@@ -112,7 +116,11 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     var norm = 0.0;
 
     for (var column = 0; column < 9; column += 3) {
-      final columnNorm = _storage[column].abs() + _storage[column + 1].abs() + _storage[column + 2].abs();
+      final columnNorm =
+          _storage[column].abs() + //
+          _storage[column + 1].abs() +
+          _storage[column + 2].abs();
+
       norm = columnNorm > norm ? columnNorm : norm;
     }
 
@@ -148,15 +156,15 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     final resultX = (_storage[0] * x) + (_storage[3] * y) + _storage[6];
     final resultY = (_storage[1] * x) + (_storage[4] * y) + _storage[7];
 
-    if (out == null) {
-      return .new(resultX, resultY);
+    if (out != null) {
+      out.mutate()
+        ..x = resultX
+        ..y = resultY;
+
+      return out;
     }
 
-    out.mutate()
-      ..x = resultX
-      ..y = resultY;
-
-    return out;
+    return .new(resultX, resultY);
   }
 
   /// Rotates [arg] by the absolute rotation of this. Primarily used by AABB
@@ -197,15 +205,10 @@ class Matrix3 implements Mutable<MutableMatrix3> {
   /// Returns a copy of this scaled by [scale].
   Matrix3 scale(double scale) => clone()..mutate().scale(scale);
 
-  /// Returns this matrix multiplied by [arg]: applying the result to a
-  /// point is equivalent to applying [arg] first, then this.
+  /// Returns this matrix multiplied by [arg]. Note the order.
   Matrix3 multiply(Matrix3 arg) => clone()..mutate().multiply(arg);
 
-  /// Returns [arg] multiplied by this: applying the result to a point is
-  /// equivalent to applying this first, then [arg]. Not from `vector_math`
-  /// — the natural counterpart to [multiply] for accumulating a chain of
-  /// transforms where each new one applies on the *outside* (e.g. walking
-  /// up a scene graph composing ancestor transforms one at a time).
+  /// Returns [arg] multiplied by this. Note the order.
   Matrix3 premultiply(Matrix3 arg) => clone()..mutate().premultiply(arg);
 
   Matrix3 operator +(Matrix3 arg) => clone()..mutate().add(arg);
@@ -274,15 +277,11 @@ extension type MutableMatrix3(Matrix3 matrix) {
 
   /// Sets the matrix with the given values, in column-major order.
   void setValues(
-    double arg0,
-    double arg1,
-    double arg2,
-    double arg3,
-    double arg4,
-    double arg5,
-    double arg6,
-    double arg7,
-    double arg8,
+    // dart format off
+    double arg0, double arg1, double arg2,
+    double arg3, double arg4, double arg5,
+    double arg6, double arg7, double arg8,
+    // dart format on
   ) {
     final storage = matrix._storage;
     // dart format off
@@ -300,6 +299,7 @@ extension type MutableMatrix3(Matrix3 matrix) {
   /// Copies elements from [array] into this starting at [offset].
   void copyFromArray(List<double> array, [int offset = 0]) {
     final storage = matrix._storage;
+
     for (var i = 0; i < 9; i += 1) {
       storage[i] = array[offset + i];
     }
@@ -380,26 +380,29 @@ extension type MutableMatrix3(Matrix3 matrix) {
   /// Scales this by [scale].
   void scale(double scale) {
     final storage = matrix._storage;
+
     for (var i = 0; i < 9; i += 1) {
       storage[i] *= scale;
     }
   }
 
-  /// Add [o] to this.
-  void add(Matrix3 o) {
+  /// Add [other] to this.
+  void add(Matrix3 other) {
     final storage = matrix._storage;
-    final oStorage = o._storage;
+    final otherStorage = other._storage;
+
     for (var i = 0; i < 9; i += 1) {
-      storage[i] += oStorage[i];
+      storage[i] += otherStorage[i];
     }
   }
 
-  /// Subtract [o] from this.
-  void sub(Matrix3 o) {
+  /// Subtract [other] from this.
+  void sub(Matrix3 other) {
     final storage = matrix._storage;
-    final oStorage = o._storage;
+    final otherStorage = other._storage;
+
     for (var i = 0; i < 9; i += 1) {
-      storage[i] -= oStorage[i];
+      storage[i] -= otherStorage[i];
     }
   }
 
@@ -411,7 +414,7 @@ extension type MutableMatrix3(Matrix3 matrix) {
     }
   }
 
-  /// Multiply this by [arg].
+  /// Multiply this by [arg]: `this * args`.
   void multiply(Matrix3 arg) {
     final storage = matrix._storage;
     final m00 = storage[0], m01 = storage[3], m02 = storage[6];
@@ -432,8 +435,7 @@ extension type MutableMatrix3(Matrix3 matrix) {
     storage[8] = (m20 * n02) + (m21 * n12) + (m22 * n22);
   }
 
-  /// Premultiplies this by [arg]: sets this to `arg * this`. Not from
-  /// `vector_math` — see [Matrix3.premultiply].
+  /// Premultiplies this by [arg]: `arg * this`.
   void premultiply(Matrix3 arg) {
     final storage = matrix._storage;
     final argStorage = arg._storage;
@@ -508,6 +510,7 @@ extension type MutableMatrix3(Matrix3 matrix) {
   /// Set this matrix to be the inverse of [arg]. Returns the determinant.
   double copyInverse(Matrix3 arg) {
     final det = arg.determinant();
+
     if (det == 0.0) {
       setFrom(arg);
       return 0.0;
@@ -526,15 +529,11 @@ extension type MutableMatrix3(Matrix3 matrix) {
     final kz = invDet * (argStorage[0] * argStorage[4] - argStorage[1] * argStorage[3]);
 
     final storage = matrix._storage;
-    storage[0] = ix;
-    storage[1] = iy;
-    storage[2] = iz;
-    storage[3] = jx;
-    storage[4] = jy;
-    storage[5] = jz;
-    storage[6] = kx;
-    storage[7] = ky;
-    storage[8] = kz;
+    // dart format off
+    storage[0] = ix; storage[1] = iy; storage[2] = iz;
+    storage[3] = jx; storage[4] = jy; storage[5] = jz;
+    storage[6] = kx; storage[7] = ky; storage[8] = kz;
+    // dart format on
     return det;
   }
 
