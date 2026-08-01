@@ -71,13 +71,8 @@ class Aabb2 implements Mutable<MutableAabb2> {
       max.y >= point.y;
 
   @override
-  MutableAabb2 mutate() {
-    return MutableAabb2(this);
-  }
-
-  void modify(void Function(MutableAabb2 aabb) mutation) {
-    mutation(mutate());
-  }
+  MutableAabb2 mutate() => MutableAabb2._(this);
+  void modify(void Function(MutableAabb2 aabb) mutation) => mutation(mutate());
 
   @override
   String toString() => '$min -> $max';
@@ -92,7 +87,7 @@ class Aabb2 implements Mutable<MutableAabb2> {
   int get hashCode => Object.hash(min, max);
 }
 
-extension type MutableAabb2(Aabb2 aabb) {
+extension type MutableAabb2._(Aabb2 aabb) {
   Vector2 get min => aabb.min;
   Vector2 get max => aabb.max;
   bool containsAabb2(Aabb2 other) => aabb.containsAabb2(other);

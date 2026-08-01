@@ -81,13 +81,8 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
 
   @override
-  MutableVector2 mutate() {
-    return MutableVector2(this);
-  }
-
-  void modify(void Function(MutableVector2 vector) mutation) {
-    mutation(mutate());
-  }
+  MutableVector2 mutate() => MutableVector2._(this);
+  void modify(void Function(MutableVector2 vector) mutation) => mutation(mutate());
 
   @override
   String toString() => '($x, $y)';
@@ -102,7 +97,7 @@ class Vector2 implements Mutable<MutableVector2> {
   int get hashCode => Object.hashAll(_storage);
 }
 
-extension type MutableVector2(Vector2 vector) {
+extension type MutableVector2._(Vector2 vector) {
   Float64List get storage => vector._storage;
   double operator [](int index) => vector[index];
   double get x => vector.x;

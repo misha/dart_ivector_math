@@ -189,13 +189,8 @@ class Matrix3 implements Mutable<MutableMatrix3> {
   Matrix3 operator -() => clone()..mutate().negate();
 
   @override
-  MutableMatrix3 mutate() {
-    return MutableMatrix3(this);
-  }
-
-  void modify(void Function(MutableMatrix3 matrix) mutation) {
-    mutation(mutate());
-  }
+  MutableMatrix3 mutate() => MutableMatrix3._(this);
+  void modify(void Function(MutableMatrix3 matrix) mutation) => mutation(mutate());
 
   @override
   String toString() =>
@@ -220,7 +215,7 @@ class Matrix3 implements Mutable<MutableMatrix3> {
   int get hashCode => Object.hashAll(_storage);
 }
 
-extension type MutableMatrix3(Matrix3 matrix) {
+extension type MutableMatrix3._(Matrix3 matrix) {
   Float64List get storage => matrix._storage;
   int get dimension => matrix.dimension;
   double entry(int row, int col) => matrix.entry(row, col);
