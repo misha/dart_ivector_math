@@ -4,21 +4,7 @@ import 'dart:typed_data';
 import 'mutable.dart';
 import 'vector2.dart';
 
-/// 3x3 matrix, values stored in column-major order — identical layout and
-/// operations to `vector_math`'s own `Matrix3`, adapted to this library's
-/// controlled-mutability model. `Vector3`/`Matrix2`/`Matrix4` don't exist in
-/// this library yet, so every `vector_math` operation that depends on one of
-/// those (row/column vectors, 3D `transform`, `setUpper2x2`,
-/// `copyNormalMatrix`, ...) is left out; everything else — including 2D
-/// affine use via [transform2]/[absoluteRotate2], exactly as `vector_math`'s
-/// own `Aabb2.transform` uses it — is ported as-is, formulas included.
-///
-/// One deliberate naming departure: `vector_math` gives its mutating and
-/// copy-producing operations distinct names (`multiply`/`multiplied`,
-/// `scale`/`scaled`, `transpose`/`transposed`). This library follows
-/// [Vector2]'s convention instead — the same present-tense name on both
-/// [Matrix3] and [MutableMatrix3], shifting from "returns a new copy" to
-/// "mutates in place" depending on which one you're holding.
+/// Defines a 3x3 matrix with values stored in column-major order.
 class Matrix3 implements Mutable<MutableMatrix3> {
   Matrix3.zero();
 
@@ -49,24 +35,16 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     _storage.setAll(0, other._storage);
   }
 
-  factory Matrix3.identity() =>
-      Matrix3.zero() //
-        ..mutate().setIdentity();
+  factory Matrix3.identity() => Matrix3.zero()..mutate().setIdentity();
 
   /// Rotation of [radians] around the x axis.
-  factory Matrix3.rotationX(double radians) =>
-      Matrix3.zero() //
-        ..mutate().setRotationX(radians);
+  factory Matrix3.rotationX(double radians) => Matrix3.zero()..mutate().setRotationX(radians);
 
   /// Rotation of [radians] around the y axis.
-  factory Matrix3.rotationY(double radians) =>
-      Matrix3.zero() //
-        ..mutate().setRotationY(radians);
+  factory Matrix3.rotationY(double radians) => Matrix3.zero()..mutate().setRotationY(radians);
 
   /// Rotation of [radians] around the z axis.
-  factory Matrix3.rotationZ(double radians) =>
-      Matrix3.zero() //
-        ..mutate().setRotationZ(radians);
+  factory Matrix3.rotationZ(double radians) => Matrix3.zero()..mutate().setRotationZ(radians);
 
   final _storage = Float64List(9);
 
