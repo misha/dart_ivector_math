@@ -109,40 +109,19 @@ class Matrix3 implements Mutable<MutableMatrix3> {
   /// Returns the absolute error between this and [correct].
   double absoluteError(Matrix3 correct) => (infinityNorm() - correct.infinityNorm()).abs();
 
-  /// Transforms [arg] with this. Primarily used for 2D affine transforms,
-  /// treating the third row/column as homogeneous translation.
-  MutableVector2 transform2(MutableVector2 arg) {
-    final x = arg.x;
-    final y = arg.y;
-    arg.x = (_storage[0] * x) + (_storage[3] * y) + _storage[6];
-    arg.y = (_storage[1] * x) + (_storage[4] * y) + _storage[7];
-    return arg;
+  /// Transforms [arg] and returns it.
+  Vector2 transform(MutableVector2 arg) {
+    arg
+      ..x = (_storage[0] * arg.x) + (_storage[3] * arg.y) + _storage[6]
+      ..y = (_storage[1] * arg.x) + (_storage[4] * arg.y) + _storage[7];
+
+    return arg.vector;
   }
 
-  /// Transforms [point] and returns the result. Not from `vector_math` —
-  /// unlike [transform2], this leaves [point] itself unchanged. If [out] is
-  /// given, the result is written into it (no allocation) and [out] itself
-  /// is returned; otherwise a new [Vector2] is allocated.
-  Vector2 transform(Vector2 point, [Vector2? out]) {
-    final x = point.x;
-    final y = point.y;
-    final resultX = (_storage[0] * x) + (_storage[3] * y) + _storage[6];
-    final resultY = (_storage[1] * x) + (_storage[4] * y) + _storage[7];
-
-    if (out != null) {
-      out.mutate()
-        ..x = resultX
-        ..y = resultY;
-
-      return out;
-    }
-
-    return .new(resultX, resultY);
-  }
-
-  /// Rotates [arg] by the absolute rotation of this. Primarily used by AABB
-  /// transformation code.
-  MutableVector2 absoluteRotate2(MutableVector2 arg) {
+  /// Rotates [arg] by the absolute rotation of this.
+  ///
+  /// Primarily used by AABB transformation code.
+  Vector2 absoluteRotate2(MutableVector2 arg) {
     final m00 = _storage[0].abs();
     final m01 = _storage[3].abs();
     final m10 = _storage[1].abs();
@@ -151,7 +130,7 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     final y = arg.y;
     arg.x = x * m00 + y * m01;
     arg.y = x * m10 + y * m11;
-    return arg;
+    return arg.vector;
   }
 
   /// Copies this into [array] starting at [offset].
@@ -227,9 +206,7 @@ extension type MutableMatrix3._(Matrix3 matrix) {
   double infinityNorm() => matrix.infinityNorm();
   double relativeError(Matrix3 correct) => matrix.relativeError(correct);
   double absoluteError(Matrix3 correct) => matrix.absoluteError(correct);
-  MutableVector2 transform2(MutableVector2 arg) => matrix.transform2(arg);
-  Vector2 transform(Vector2 point, [Vector2? out]) => matrix.transform(point, out);
-  MutableVector2 absoluteRotate2(MutableVector2 arg) => matrix.absoluteRotate2(arg);
+  Vector2 transform(MutableVector2 arg) => matrix.transform(arg);
   void copyIntoArray(List<num> array, [int offset = 0]) => matrix.copyIntoArray(array, offset);
 
   void operator []=(int index, double value) {

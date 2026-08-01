@@ -124,38 +124,10 @@ void main() {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
       final point = Vector2(1, 1);
 
-      matrix.transform2(point.mutate());
+      matrix.transform(point.mutate());
 
       expectVector2(point, 12, 23);
     });
-
-    test(
-      'transforms a point into a new Vector2 without changing the source',
-      () {
-        final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
-        final point = Vector2(1, 1);
-
-        final transformed = matrix.transform(point);
-
-        expectVector2(transformed, 12, 23);
-        expectVector2(point, 1, 1);
-      },
-    );
-
-    test(
-      'transforms a point into a given out Vector2 without allocating a new one',
-      () {
-        final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
-        final point = Vector2(1, 1);
-        final out = Vector2.zero();
-
-        final transformed = matrix.transform(point, out);
-
-        expect(identical(transformed, out), isTrue);
-        expectVector2(out, 12, 23);
-        expectVector2(point, 1, 1);
-      },
-    );
 
     test(
       'rotates a 2D point by the absolute rotation, ignoring translation',
@@ -298,7 +270,6 @@ void main() {
       expect(mutable.isIdentity(), isFalse);
       expect(mutable.isZero(), isFalse);
       expect(mutable.infinityNorm(), matrix.infinityNorm());
-      expect(mutable.transform(Vector2(1, 1)), matrix.transform(Vector2(1, 1)));
       expectMatrix3(matrix, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     });
 
