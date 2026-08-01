@@ -70,8 +70,6 @@ class Matrix3 implements Mutable<MutableMatrix3> {
 
   final _storage = Float64List(9);
 
-  Float64List get storage => _storage;
-
   /// Dimension of the matrix.
   int get dimension => 3;
 
