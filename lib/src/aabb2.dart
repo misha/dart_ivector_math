@@ -27,10 +27,11 @@ class Aabb2 implements Mutable<MutableAabb2> {
   /// The maximum point defining this AABB.
   final Vector2 max;
 
+  double get centerX => (min.x + max.x) / 2;
+  double get centerY => (min.y + max.y) / 2;
+
   /// The center of this AABB. Allocates a new [Vector2].
-  Vector2 get center => min.clone()
-    ..mutate().add(max)
-    ..mutate().scale(0.5);
+  Vector2 get center => Vector2(centerX, centerY);
 
   Aabb2 clone() => .copy(this);
 
