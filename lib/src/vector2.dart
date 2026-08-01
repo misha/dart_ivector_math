@@ -1,5 +1,3 @@
-// GENERATED FILE. DO NOT EDIT.
-
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -79,10 +77,8 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 multiply(Vector2 other) => clone()..mutate().multiply(other);
   Vector2 normalize() => clone()..mutate().normalize();
   Vector2 reflect(Vector2 normal) => clone()..mutate().reflect(normal);
-  Vector2 clamp(Vector2 xRange, [Vector2? yRange]) =>
-      clone()..mutate().clamp(xRange, yRange);
-  Vector2 clampTo(double min, double max) =>
-      clone()..mutate().clampTo(min, max);
+  Vector2 clamp(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
+  Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
 
   @override
   MutableVector2 mutate() {

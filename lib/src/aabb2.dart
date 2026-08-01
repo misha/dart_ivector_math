@@ -27,9 +27,6 @@ class Aabb2 implements Mutable<MutableAabb2> {
   /// The maximum point defining this AABB.
   final Vector2 max;
 
-  /// Bare, unowned dirty bitmask. [mutate] sets every bit. @dirty
-  int dirty = 0; // @dirty
-
   /// The center of this AABB. Allocates a new [Vector2].
   Vector2 get center => min.clone()
     ..mutate().add(max)
@@ -75,7 +72,6 @@ class Aabb2 implements Mutable<MutableAabb2> {
 
   @override
   MutableAabb2 mutate() {
-    dirty = -1; // @dirty
     return MutableAabb2(this);
   }
 

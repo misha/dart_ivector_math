@@ -70,9 +70,6 @@ class Matrix3 implements Mutable<MutableMatrix3> {
 
   final _storage = Float64List(9);
 
-  /// Bare, unowned dirty bitmask. [mutate] sets every bit. @dirty
-  int dirty = 0; // @dirty
-
   Float64List get storage => _storage;
 
   /// Dimension of the matrix.
@@ -217,7 +214,6 @@ class Matrix3 implements Mutable<MutableMatrix3> {
 
   @override
   MutableMatrix3 mutate() {
-    dirty = -1; // @dirty
     return MutableMatrix3(this);
   }
 
