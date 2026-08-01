@@ -148,11 +148,14 @@ class Matrix3 implements Mutable<MutableMatrix3> {
     final resultX = (_storage[0] * x) + (_storage[3] * y) + _storage[6];
     final resultY = (_storage[1] * x) + (_storage[4] * y) + _storage[7];
 
-    if (out == null) return .new(resultX, resultY);
+    if (out == null) {
+      return .new(resultX, resultY);
+    }
 
     out.mutate()
       ..x = resultX
       ..y = resultY;
+
     return out;
   }
 
