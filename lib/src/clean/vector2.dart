@@ -135,12 +135,17 @@ extension type MutableVector2(Vector2 vector) {
     vector._storage[1] = value;
   }
 
-  void set(Vector2 other) {
+  void setFrom(Vector2 other) {
     x = other.x;
     y = other.y;
   }
 
-  void splat(double value) {
+  void setValues(double x, double y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  void setAll(double value) {
     x = value;
     y = value;
   }

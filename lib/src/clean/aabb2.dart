@@ -6,16 +6,17 @@ import 'mutable.dart';
 import 'vector2.dart';
 
 /// Defines a 2-dimensional axis-aligned bounding box between a [min] and a
-/// [max] position, following `vector_math`'s own `Aabb2` structure: two
-/// owned [Vector2] corners rather than a flat buffer.
+/// [max] position.
 class Aabb2 implements Mutable<MutableAabb2> {
-  Aabb2() : min = Vector2.zero(), max = Vector2.zero();
+  Aabb2() //
+    : min = Vector2.zero(),
+      max = Vector2.zero();
 
-  Aabb2.copy(Aabb2 other)
+  Aabb2.copy(Aabb2 other) //
     : min = Vector2.copy(other.min),
       max = Vector2.copy(other.max);
 
-  Aabb2.minMax(Vector2 min, Vector2 max)
+  Aabb2.minMax(Vector2 min, Vector2 max) //
     : min = Vector2.copy(min),
       max = Vector2.copy(max);
 
@@ -23,15 +24,9 @@ class Aabb2 implements Mutable<MutableAabb2> {
       Aabb2()..mutate().setCenterAndHalfExtents(center, halfExtents);
 
   /// The minimum point defining this AABB.
-  ///
-  /// Mutate in place through [Vector2.mutate]; reassigning this field isn't
-  /// supported.
   final Vector2 min;
 
   /// The maximum point defining this AABB.
-  ///
-  /// Mutate in place through [Vector2.mutate]; reassigning this field isn't
-  /// supported.
   final Vector2 max;
 
   /// The center of this AABB. Allocates a new [Vector2].
@@ -91,7 +86,9 @@ class Aabb2 implements Mutable<MutableAabb2> {
 
   @override
   bool operator ==(Object other) =>
-      other is Aabb2 && min == other.min && max == other.max;
+      other is Aabb2 && //
+      min == other.min &&
+      max == other.max;
 
   @override
   int get hashCode => Object.hash(min, max);
@@ -108,16 +105,17 @@ extension type MutableAabb2(Aabb2 aabb) {
   bool intersectsWithVector2(Vector2 point) =>
       aabb.intersectsWithVector2(point);
 
-  void set(Aabb2 other) {
-    aabb.min.mutate().set(other.min);
-    aabb.max.mutate().set(other.max);
+  void setFrom(Aabb2 other) {
+    aabb.min.mutate().setFrom(other.min);
+    aabb.max.mutate().setFrom(other.max);
   }
 
   /// Sets both corners from raw components, without allocating.
-  void setMinMax(double minX, double minY, double maxX, double maxY) {
+  void setValues(double minX, double minY, double maxX, double maxY) {
     aabb.min.mutate()
       ..x = minX
       ..y = minY;
+
     aabb.max.mutate()
       ..x = maxX
       ..y = maxY;
@@ -127,6 +125,7 @@ extension type MutableAabb2(Aabb2 aabb) {
     aabb.min.mutate()
       ..x = center.x - halfExtents.x
       ..y = center.y - halfExtents.y;
+
     aabb.max.mutate()
       ..x = center.x + halfExtents.x
       ..y = center.y + halfExtents.y;
