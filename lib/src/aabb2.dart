@@ -90,63 +90,63 @@ class Aabb2 implements Mutable<MutableAabb2> {
   int get hashCode => Object.hash(min, max);
 }
 
-extension type MutableAabb2._(Aabb2 aabb) {
-  Vector2 get min => aabb.min;
-  Vector2 get max => aabb.max;
-  double get width => aabb.width;
-  double get height => aabb.height;
-  double get centerX => aabb.centerX;
-  double get centerY => aabb.centerY;
-  bool containsAabb2(Aabb2 other) => aabb.containsAabb2(other);
-  bool containsVector2(Vector2 point) => aabb.containsVector2(point);
-  bool overlapsX(Aabb2 other) => aabb.overlapsX(other);
-  bool overlapsY(Aabb2 other) => aabb.overlapsY(other);
-  bool intersectsWithAabb2(Aabb2 other) => aabb.intersectsWithAabb2(other);
-  bool intersectsWithVector2(Vector2 point) => aabb.intersectsWithVector2(point);
+extension type MutableAabb2._(Aabb2 source) {
+  Vector2 get min => source.min;
+  Vector2 get max => source.max;
+  double get width => source.width;
+  double get height => source.height;
+  double get centerX => source.centerX;
+  double get centerY => source.centerY;
+  bool containsAabb2(Aabb2 other) => source.containsAabb2(other);
+  bool containsVector2(Vector2 point) => source.containsVector2(point);
+  bool overlapsX(Aabb2 other) => source.overlapsX(other);
+  bool overlapsY(Aabb2 other) => source.overlapsY(other);
+  bool intersectsWithAabb2(Aabb2 other) => source.intersectsWithAabb2(other);
+  bool intersectsWithVector2(Vector2 point) => source.intersectsWithVector2(point);
 
   void setFrom(Aabb2 other) {
-    aabb.min.mutate().setFrom(other.min);
-    aabb.max.mutate().setFrom(other.max);
+    source.min.mutate().setFrom(other.min);
+    source.max.mutate().setFrom(other.max);
   }
 
   /// Sets both corners from raw components, without allocating.
   void setValues(double minX, double minY, double maxX, double maxY) {
-    aabb.min.mutate()
+    source.min.mutate()
       ..x = minX
       ..y = minY;
 
-    aabb.max.mutate()
+    source.max.mutate()
       ..x = maxX
       ..y = maxY;
   }
 
   void setCenterAndHalfExtents(Vector2 center, Vector2 halfExtents) {
-    aabb.min.mutate()
+    source.min.mutate()
       ..x = center.x - halfExtents.x
       ..y = center.y - halfExtents.y;
 
-    aabb.max.mutate()
+    source.max.mutate()
       ..x = center.x + halfExtents.x
       ..y = center.y + halfExtents.y;
   }
 
   void hull(Aabb2 other) {
-    aabb.min.mutate()
-      ..x = math.min(aabb.min.x, other.min.x)
-      ..y = math.min(aabb.min.y, other.min.y);
+    source.min.mutate()
+      ..x = math.min(source.min.x, other.min.x)
+      ..y = math.min(source.min.y, other.min.y);
 
-    aabb.max.mutate()
-      ..x = math.max(aabb.max.x, other.max.x)
-      ..y = math.max(aabb.max.y, other.max.y);
+    source.max.mutate()
+      ..x = math.max(source.max.x, other.max.x)
+      ..y = math.max(source.max.y, other.max.y);
   }
 
   void hullPoint(Vector2 point) {
-    aabb.min.mutate()
-      ..x = math.min(aabb.min.x, point.x)
-      ..y = math.min(aabb.min.y, point.y);
+    source.min.mutate()
+      ..x = math.min(source.min.x, point.x)
+      ..y = math.min(source.min.y, point.y);
 
-    aabb.max.mutate()
-      ..x = math.max(aabb.max.x, point.x)
-      ..y = math.max(aabb.max.y, point.y);
+    source.max.mutate()
+      ..x = math.max(source.max.x, point.x)
+      ..y = math.max(source.max.y, point.y);
   }
 }

@@ -20,26 +20,23 @@ void main() {
 
 ## Principle
 
-Every object in the library has two mirrored APIs: immutable and mutable.
+In `ivector_math`, the mutation of objects and parameters is explicitly documented by the presence of `mutate()`.
 
-The goal of the immutable API is to make mutation difficult.
+To accomplish this, every class in the library has two forms, immutable and mutable. These forms always have distinct types, such as `Vector2` and `MutableVector2`. `mutate()` transforms the immutable to the mutable. The immutable is then retrieved with `source`.
 
-```dart
-final size = Vector2(1, 2);
-final bigger = size.scale(2); // Allocates a new vector.
-```
-
-The goal of the mutable API is to make allocation difficult.
+The goal of the immutable form is to make allocation the default and mutation difficult.
 
 ```dart
 final size = Vector2(1, 2);
-
-size.modify((MutableVector2 size) {
-  size.scale(2); // Mutates the size vector.
-});
+final result = size.scale(2); // Allocates a vector with (2, 4).
 ```
 
-`ivector_math` always assigns these roles to two distinct classes, such as `Vector2` and `MutableVector2`. You can always check which mode you're in by looking at the type of the object.
+The goal of the mutable form is to make mutation the default and allocation difficult.
+
+```dart
+final size = Vector2(1, 2);
+size.mutate().scale(2); // Mutates `size` to (2, 4).
+```
 
 ## Progress
 

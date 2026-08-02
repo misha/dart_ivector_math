@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'matrix3.dart';
 import 'mutable.dart';
 
 class Vector2 implements Mutable<MutableVector2> {
@@ -73,12 +74,21 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 operator /(double value) => scale(1.0 / value);
   double dot(Vector2 other) => x * other.x + y * other.y;
   double cross(Vector2 other) => x * other.y - y * other.x;
+  Vector2 absolute() => clone()..mutate().absolute();
   Vector2 scale(double value) => clone()..mutate().scale(value);
   Vector2 multiply(Vector2 other) => clone()..mutate().multiply(other);
   Vector2 normalize() => clone()..mutate().normalize();
   Vector2 reflect(Vector2 normal) => clone()..mutate().reflect(normal);
   Vector2 clamp(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
   Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
+
+  /// Transforms this by [matrix] and returns the result.
+  Vector2 transformWith(Matrix3 matrix) => clone()..mutate().transformWith(matrix);
+
+  /// Rotates this by the absolute rotation of the top-left 2x2 of [matrix],
+  /// ignoring translation, and returns the result. Primarily used by AABB
+  /// transformation code.
+  Vector2 absoluteRotate2With(Matrix3 matrix) => clone()..mutate().absoluteRotate2With(matrix);
 
   @override
   MutableVector2 mutate() => MutableVector2._(this);
@@ -97,33 +107,33 @@ class Vector2 implements Mutable<MutableVector2> {
   int get hashCode => Object.hashAll(_storage);
 }
 
-extension type MutableVector2._(Vector2 vector) {
-  Float64List get storage => vector._storage;
-  double operator [](int index) => vector[index];
-  double get x => vector.x;
-  double get y => vector.y;
-  bool get isZero => vector.isZero;
-  bool get isInfinite => vector.isInfinite;
-  bool get isNaN => vector.isNaN;
-  double get length => vector.length;
-  double get length2 => vector.length2;
-  double distance(Vector2 other) => vector.distance(other);
-  double distance2(Vector2 other) => vector.distance2(other);
-  double angleTo(Vector2 other) => vector.angleTo(other);
-  double angleToSigned(Vector2 other) => vector.angleToSigned(other);
-  double dot(Vector2 other) => vector.dot(other);
-  double cross(Vector2 other) => vector.cross(other);
+extension type MutableVector2._(Vector2 source) {
+  Float64List get storage => source._storage;
+  double operator [](int index) => source[index];
+  double get x => source.x;
+  double get y => source.y;
+  bool get isZero => source.isZero;
+  bool get isInfinite => source.isInfinite;
+  bool get isNaN => source.isNaN;
+  double get length => source.length;
+  double get length2 => source.length2;
+  double distance(Vector2 other) => source.distance(other);
+  double distance2(Vector2 other) => source.distance2(other);
+  double angleTo(Vector2 other) => source.angleTo(other);
+  double angleToSigned(Vector2 other) => source.angleToSigned(other);
+  double dot(Vector2 other) => source.dot(other);
+  double cross(Vector2 other) => source.cross(other);
 
   void operator []=(int index, double value) {
-    vector._storage[index] = value;
+    source._storage[index] = value;
   }
 
   set x(double value) {
-    vector._storage[0] = value;
+    source._storage[0] = value;
   }
 
   set y(double value) {
-    vector._storage[1] = value;
+    source._storage[1] = value;
   }
 
   void setFrom(Vector2 other) {
@@ -218,7 +228,7 @@ extension type MutableVector2._(Vector2 vector) {
   }
 
   double normalize() {
-    final length = vector.length;
+    final length = source.length;
     if (length == 0) return 0;
 
     final scale = 1 / length;
@@ -228,8 +238,30 @@ extension type MutableVector2._(Vector2 vector) {
   }
 
   void reflect(Vector2 normal) {
-    final dotProduct = normal.dot(vector) * 2;
+    final dotProduct = normal.dot(source) * 2;
     x -= normal.x * dotProduct;
     y -= normal.y * dotProduct;
+  }
+
+  /// Transforms this by [matrix] in place.
+  void transformWith(Matrix3 matrix) {
+    final oldX = x;
+    final oldY = y;
+    x = (matrix[0] * oldX) + (matrix[3] * oldY) + matrix[6];
+    y = (matrix[1] * oldX) + (matrix[4] * oldY) + matrix[7];
+  }
+
+  /// Rotates this by the absolute rotation of the top-left 2x2 of [matrix],
+  /// ignoring translation, in place. Primarily used by AABB transformation
+  /// code.
+  void absoluteRotate2With(Matrix3 matrix) {
+    final m00 = matrix[0].abs();
+    final m01 = matrix[3].abs();
+    final m10 = matrix[1].abs();
+    final m11 = matrix[4].abs();
+    final oldX = x;
+    final oldY = y;
+    x = (oldX * m00) + (oldY * m01);
+    y = (oldX * m10) + (oldY * m11);
   }
 }

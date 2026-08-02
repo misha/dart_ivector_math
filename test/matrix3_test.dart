@@ -120,26 +120,25 @@ void main() {
       expect(approximate.absoluteError(correct), closeTo(0.1, 0.0000001));
     });
 
-    test('transforms a 2D point', () {
+    test('transforms a point into a new Vector2 without changing the source', () {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
       final point = Vector2(1, 1);
 
-      matrix.transform(point.mutate());
+      final transformed = matrix.transform(point);
 
-      expectVector2(point, 12, 23);
+      expectVector2(transformed, 12, 23);
+      expectVector2(point, 1, 1);
     });
 
-    test(
-      'rotates a 2D point by the absolute rotation, ignoring translation',
-      () {
-        final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
-        final point = Vector2(2, 3);
+    test('rotates a point by the absolute rotation into a new Vector2 without changing the source', () {
+      final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
+      final point = Vector2(2, 3);
 
-        matrix.absoluteRotate2(point.mutate());
+      final rotated = matrix.absoluteRotate2(point);
 
-        expectVector2(point, 3, 2);
-      },
-    );
+      expectVector2(rotated, 3, 2);
+      expectVector2(point, 2, 3);
+    });
 
     test('copies into an array', () {
       final array = List<double>.filled(9, 0);
@@ -270,6 +269,8 @@ void main() {
       expect(mutable.isIdentity(), isFalse);
       expect(mutable.isZero(), isFalse);
       expect(mutable.infinityNorm(), matrix.infinityNorm());
+      expect(mutable.transform(Vector2(1, 1)), matrix.transform(Vector2(1, 1)));
+      expect(mutable.absoluteRotate2(Vector2(1, 1)), matrix.absoluteRotate2(Vector2(1, 1)));
       expectMatrix3(matrix, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     });
 
@@ -355,7 +356,7 @@ void main() {
     test('sets the diagonal in place', () {
       final matrix = Matrix3.zero();
 
-      matrix.mutate().splatDiagonal(5);
+      matrix.mutate().setDiagonal(5);
 
       expectMatrix3(matrix, 5, 0, 0, 0, 5, 0, 0, 0, 5);
     });
@@ -390,6 +391,14 @@ void main() {
       matrix.mutate().transpose();
 
       expectMatrix3(matrix, 1, 4, 7, 2, 5, 8, 3, 6, 9);
+    });
+
+    test('computes the absolute value of every entry in place', () {
+      final matrix = Matrix3(-1, 2, -3, 4, -5, 6, -7, 8, -9);
+
+      matrix.mutate().absolute();
+
+      expectMatrix3(matrix, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     });
 
     test('scales every entry in place', () {

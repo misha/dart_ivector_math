@@ -145,6 +145,15 @@ void main() {
       expectVector2(vector, 0, 0);
     });
 
+    test('creates a component-wise absolute copy without changing the source', () {
+      final vector = Vector2(-1, 2);
+
+      final absolute = vector.absolute();
+
+      expectVector2(absolute, 1, 2);
+      expectVector2(vector, -1, 2);
+    });
+
     test('computes dot and cross products without changing its sources', () {
       final first = Vector2(2, 3);
       final second = Vector2(4, 5);
@@ -221,6 +230,26 @@ void main() {
 
       expectVector2(clamped, -1, 5);
       expectVector2(vector, -2, 10);
+    });
+
+    test('creates a transformed copy without changing the source', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final point = Vector2(1, 1);
+
+      final transformed = point.transformWith(matrix);
+
+      expectVector2(transformed, 12, 23);
+      expectVector2(point, 1, 1);
+    });
+
+    test('creates a copy rotated by the absolute rotation of a matrix without changing the source', () {
+      final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
+      final point = Vector2(2, 3);
+
+      final rotated = point.absoluteRotate2With(matrix);
+
+      expectVector2(rotated, 3, 2);
+      expectVector2(point, 2, 3);
     });
 
     test('negates without changing the source', () {
@@ -523,6 +552,24 @@ void main() {
 
       expectVector2(vector, 1, 1);
       expectVector2(normal, 0, 1);
+    });
+
+    test('transforms a point in place', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final point = Vector2(1, 1);
+
+      point.mutate().transformWith(matrix);
+
+      expectVector2(point, 12, 23);
+    });
+
+    test('rotates a point in place by the absolute rotation of a matrix', () {
+      final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
+      final point = Vector2(2, 3);
+
+      point.mutate().absoluteRotate2With(matrix);
+
+      expectVector2(point, 3, 2);
     });
   });
 }
