@@ -27,6 +27,8 @@ class Aabb2 implements Mutable<MutableAabb2> {
   /// The maximum point defining this AABB.
   final Vector2 max;
 
+  double get width => (max.x - min.x).abs();
+  double get height => (max.y - min.y).abs();
   double get centerX => (min.x + max.x) / 2;
   double get centerY => (min.y + max.y) / 2;
 
@@ -91,6 +93,10 @@ class Aabb2 implements Mutable<MutableAabb2> {
 extension type MutableAabb2._(Aabb2 aabb) {
   Vector2 get min => aabb.min;
   Vector2 get max => aabb.max;
+  double get width => aabb.width;
+  double get height => aabb.height;
+  double get centerX => aabb.centerX;
+  double get centerY => aabb.centerY;
   bool containsAabb2(Aabb2 other) => aabb.containsAabb2(other);
   bool containsVector2(Vector2 point) => aabb.containsVector2(point);
   bool overlapsX(Aabb2 other) => aabb.overlapsX(other);

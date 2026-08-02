@@ -56,6 +56,20 @@ void main() {
       expectVector2(aabb.center, 2, 1);
     });
 
+    test('reads the width and height', () {
+      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(4, 2));
+
+      expect(aabb.width, 4);
+      expect(aabb.height, 2);
+    });
+
+    test('reads a positive width and height when min and max are inverted', () {
+      final aabb = Aabb2.minMax(Vector2(4, 2), Vector2(0, 0));
+
+      expect(aabb.width, 4);
+      expect(aabb.height, 2);
+    });
+
     test('clones without sharing storage', () {
       final aabb = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
       final clone = aabb.clone();
