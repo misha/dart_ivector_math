@@ -134,6 +134,7 @@ extension type MutableAabb2._(Aabb2 aabb) {
     aabb.min.mutate()
       ..x = math.min(aabb.min.x, other.min.x)
       ..y = math.min(aabb.min.y, other.min.y);
+
     aabb.max.mutate()
       ..x = math.max(aabb.max.x, other.max.x)
       ..y = math.max(aabb.max.y, other.max.y);
@@ -143,6 +144,7 @@ extension type MutableAabb2._(Aabb2 aabb) {
     aabb.min.mutate()
       ..x = math.min(aabb.min.x, point.x)
       ..y = math.min(aabb.min.y, point.y);
+
     aabb.max.mutate()
       ..x = math.max(aabb.max.x, point.x)
       ..y = math.max(aabb.max.y, point.y);
