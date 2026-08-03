@@ -1,3 +1,9 @@
+## 0.0.4
+
+- Improve the README.
+- Implement `Matrix3` and `Aabb2`.
+- Rename the type extension base to `source` on all mutable types.
+
 ## 0.0.3
 
 - Improve the README.

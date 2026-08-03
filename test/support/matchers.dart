@@ -32,6 +32,7 @@ void expectMatrix3(
   double arg8,
 ) {
   final expected = [arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8];
+
   for (var i = 0; i < 9; i += 1) {
     expect(matrix[i], closeTo(expected[i], 0.0000001));
   }
