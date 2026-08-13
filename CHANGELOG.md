@@ -1,3 +1,7 @@
+## 0.0.5
+
+- Implement `min`/`max` for `Vector2`.
+
 ## 0.0.4
 
 - Improve the README.
