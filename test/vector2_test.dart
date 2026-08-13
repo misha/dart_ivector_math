@@ -188,6 +188,28 @@ void main() {
       },
     );
 
+    test('creates a component-wise maximum copy without changing its sources', () {
+      final vector = Vector2(2, 5);
+      final other = Vector2(4, 3);
+
+      final maximum = vector.max(other);
+
+      expectVector2(maximum, 4, 5);
+      expectVector2(vector, 2, 5);
+      expectVector2(other, 4, 3);
+    });
+
+    test('creates a component-wise minimum copy without changing its sources', () {
+      final vector = Vector2(2, 5);
+      final other = Vector2(4, 3);
+
+      final minimum = vector.min(other);
+
+      expectVector2(minimum, 2, 3);
+      expectVector2(vector, 2, 5);
+      expectVector2(other, 4, 3);
+    });
+
     test('creates a reflected copy without changing its sources', () {
       final vector = Vector2(1, -1);
       final normal = Vector2(0, 1);
@@ -242,15 +264,18 @@ void main() {
       expectVector2(point, 1, 1);
     });
 
-    test('creates a copy rotated by the absolute rotation of a matrix without changing the source', () {
-      final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
-      final point = Vector2(2, 3);
+    test(
+      'creates a copy rotated by the absolute rotation of a matrix without changing the source',
+      () {
+        final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
+        final point = Vector2(2, 3);
 
-      final rotated = point.absoluteRotate2With(matrix);
+        final rotated = point.absoluteRotate2With(matrix);
 
-      expectVector2(rotated, 3, 2);
-      expectVector2(point, 2, 3);
-    });
+        expectVector2(rotated, 3, 2);
+        expectVector2(point, 2, 3);
+      },
+    );
 
     test('negates without changing the source', () {
       final vector = Vector2(1, -2);
@@ -534,6 +559,22 @@ void main() {
       vector.mutate().multiply(Vector2(4, 5));
 
       expectVector2(vector, 8, 15);
+    });
+
+    test('sets to the component-wise maximum in place', () {
+      final vector = Vector2(2, 5);
+
+      vector.mutate().max(Vector2(4, 3));
+
+      expectVector2(vector, 4, 5);
+    });
+
+    test('sets to the component-wise minimum in place', () {
+      final vector = Vector2(2, 5);
+
+      vector.mutate().min(Vector2(4, 3));
+
+      expectVector2(vector, 2, 3);
     });
 
     test('adds a scaled vector in place', () {

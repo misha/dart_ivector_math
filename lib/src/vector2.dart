@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'matrix3.dart';
@@ -77,6 +78,8 @@ class Vector2 implements Mutable<MutableVector2> {
   Vector2 absolute() => clone()..mutate().absolute();
   Vector2 scale(double value) => clone()..mutate().scale(value);
   Vector2 multiply(Vector2 other) => clone()..mutate().multiply(other);
+  Vector2 max(Vector2 other) => clone()..mutate().max(other);
+  Vector2 min(Vector2 other) => clone()..mutate().min(other);
   Vector2 normalize() => clone()..mutate().normalize();
   Vector2 reflect(Vector2 normal) => clone()..mutate().reflect(normal);
   Vector2 clamp(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
@@ -220,6 +223,16 @@ extension type MutableVector2._(Vector2 source) {
   void multiply(Vector2 other) {
     x *= other.x;
     y *= other.y;
+  }
+
+  void max(Vector2 other) {
+    x = math.max(x, other.x);
+    y = math.max(y, other.y);
+  }
+
+  void min(Vector2 other) {
+    x = math.min(x, other.x);
+    y = math.min(y, other.y);
   }
 
   void addScaled(Vector2 other, double value) {
