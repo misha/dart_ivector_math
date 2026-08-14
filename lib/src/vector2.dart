@@ -147,6 +147,13 @@ mixin _Vector2 {
   Vector2 clampedToY(double min, double max) =>
       .new(x, y.clamp(min, max).toDouble());
 
+  /// Copy of this with each component clamped between the matching components
+  /// of [min] and [max].
+  Vector2 clampedBetween(Vector2 min, Vector2 max) => .new(
+    x.clamp(min.x, max.x).toDouble(), //
+    y.clamp(min.y, max.y).toDouble(),
+  );
+
   /// Transforms this by [matrix] and returns the result.
   Vector2 transformed(Matrix3 matrix) => .new(
     (matrix[0] * x) + (matrix[3] * y) + matrix[6],
@@ -378,6 +385,13 @@ class MVector2 with _Vector2 implements Vector2 {
   /// Clamp the y component of this between [min] and [max].
   void clampToY(double min, double max) {
     y = y.clamp(min, max).toDouble();
+  }
+
+  /// Clamp each component of this between the matching components of [min] and
+  /// [max].
+  void clampBetween(Vector2 min, Vector2 max) {
+    x = x.clamp(min.x, max.x).toDouble();
+    y = y.clamp(min.y, max.y).toDouble();
   }
 
   /// Transforms this by [matrix] in place.

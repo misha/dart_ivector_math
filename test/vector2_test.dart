@@ -245,6 +245,26 @@ void main() {
       },
     );
 
+    test('creates a copy clamped between two vector bounds', () {
+      final vector = Vector2(-2, 10);
+      final min = Vector2(-1, 0);
+      final max = Vector2(1, 5);
+
+      final clamped = vector.clampedBetween(min, max);
+
+      expectVector2(clamped, -1, 5);
+    });
+
+    test('creates a copy clamped between two vector bounds per axis', () {
+      final vector = Vector2(0.5, 10);
+      final min = Vector2(-1, 0);
+      final max = Vector2(1, 5);
+
+      final clamped = vector.clampedBetween(min, max);
+
+      expectVector2(clamped, 0.5, 5);
+    });
+
     test('creates a transformed copy', () {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
       final point = Vector2(1, 1);
@@ -443,6 +463,22 @@ void main() {
       vector.clampToY(-1, 5);
 
       expectVector2(vector, -2, 5);
+    });
+
+    test('clamps both components between two vector bounds in place', () {
+      final vector = MVector2(-2, 10);
+
+      vector.clampBetween(Vector2(-1, 0), Vector2(1, 5));
+
+      expectVector2(vector, -1, 5);
+    });
+
+    test('clamps each axis between two vector bounds in place', () {
+      final vector = MVector2(0.5, 10);
+
+      vector.clampBetween(Vector2(-1, 0), Vector2(1, 5));
+
+      expectVector2(vector, 0.5, 5);
     });
 
     test('floors both components in place', () {
