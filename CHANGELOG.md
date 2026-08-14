@@ -1,3 +1,9 @@
+## 0.1.1
+
+- Implement `clampBetween`/`clampedBetween` for `Vector2`.
+- Implement static `Vector2.min`/`Vector2.max` as the allocating counterparts to `min`/`max` on `MVector2`.
+- Implement a canonical `infinity` member for `Vector2`.
+
 ## 0.1.0
 
 - Rewrite pretty much the entire package. As promised, before 1.0.0 things are changing dramatically.
