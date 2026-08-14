@@ -21,19 +21,13 @@ void expectAabb2(
 
 void expectMatrix3(
   Matrix3 matrix,
-  double arg0,
-  double arg1,
-  double arg2,
-  double arg3,
-  double arg4,
-  double arg5,
-  double arg6,
-  double arg7,
-  double arg8,
+  List<double> row0,
+  List<double> row1,
+  List<double> row2,
 ) {
-  final expected = [arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8];
+  final values = [...row0, ...row1, ...row2];
 
   for (var i = 0; i < 9; i += 1) {
-    expect(matrix[i], closeTo(expected[i], 0.0000001));
+    expect(matrix[i], closeTo(values[i], 0.0000001));
   }
 }

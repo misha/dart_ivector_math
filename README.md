@@ -1,10 +1,12 @@
 ## Immutable Vector Math
 
-`ivector_math` is a reimplementation of a subset of `vector_math` with controlled mutability.
+`ivector_math` is a reimplementation of a subset of `vector_math` in which the mutability of an object is explicitly documented by its type.
 
-Each type is externally immutable by default. Only by calling `mutate()` is the mutation API exposed. This subtle distinction prevents accidental modification while preserving efficient in-place operations when they are explicitly needed.
+Each type in `ivector_math` is immutable by default, but an additional mutable implementation is available with an `M` prefix. For example, `Vector2` is immutable, while `MVector2` is mutable and implements `Vector2`.
 
-The library stays as close as practical to the original `vector_math` API, with a small number of additions and adjustments to support the controlled-mutation model.
+Since the mutable type always implements the immutable type, you may use the prefix-free version throughout your code by default. When mutation is required, that requirement will now be documented explicitly through a type signature.
+
+The library stays as close as practical to the original `vector_math` API, with a small number of additions and adjustments to support the immutable/mutable split.
 
 ## Example
 
@@ -12,43 +14,25 @@ The library stays as close as practical to the original `vector_math` API, with 
 import 'package:ivector_math/ivector_math.dart';
 
 void main() {
-  final position = Vector2.zero();
-  position.x = 5; // Compile-time error.
-  position.mutate().x = 5; // Sets x to 5.
+  final position = Vector2(1, 2);
+  position.x = 3; // Compile-time error: `x` is final.
+
+  final velocity = MVector2(1, 2);
+  velocity.x = 3; // Sets x to 5.
 }
-```
-
-## Principle
-
-In `ivector_math`, the mutation of objects and parameters is explicitly documented by the presence of `mutate()`.
-
-To accomplish this, every class in the library has two forms, immutable and mutable. These forms always have distinct types, such as `Vector2` and `MutableVector2`. `mutate()` transforms the immutable to the mutable. The immutable is then retrieved with `source`.
-
-The goal of the immutable form is to make allocation the default and mutation difficult.
-
-```dart
-final size = Vector2(1, 2);
-final result = size.scale(2); // Allocates a vector with (2, 4).
-```
-
-The goal of the mutable form is to make mutation the default and allocation difficult.
-
-```dart
-final size = Vector2(1, 2);
-size.mutate().scale(2); // Mutates `size` to (2, 4).
 ```
 
 ## Progress
 
 The following classes from `vector_math` are planned. The subset was selected on the basis of my personal usage of `vector_math` for 2D game development in Dart.
 
-- [x] `Vector2`
-- [ ] `Vector3`
-- [x] `Matrix3`
-- [x] `Aabb2`
-- [ ] `Aabb3`
-- [ ] `Quad`
-- [ ] `Ray`
+- [x] `Vector2`/`MVector2`
+- [ ] `Vector3`/`MVector3`
+- [x] `Matrix3`/`MMatrix3`
+- [x] `Aabb2`/`MAabb2`
+- [ ] `Aabb3`/`MAabb3`
+- [ ] `Quad`/`MQuad`
+- [ ] `Ray`/`MRay`
 - [ ] Intersections
 - [ ] Benchmarks
 

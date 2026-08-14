@@ -1,66 +1,59 @@
 import 'dart:math';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'matrix3.dart';
-import 'mutable.dart';
 
-class Vector2 implements Mutable<MutableVector2> {
-  Vector2.zero();
+mixin _Vector2 {
+  double get x;
+  double get y;
 
-  Vector2(double x, double y) {
-    _storage[0] = x;
-    _storage[1] = y;
+  /// Access the component of the vector at the index [index].
+  double operator [](int index) {
+    switch (index) {
+      case 0:
+        return x;
+
+      case 1:
+        return y;
+
+      default:
+        throw RangeError.value(index, 'index');
+    }
   }
 
-  Vector2.cast(num x, num y) {
-    _storage[0] = x.toDouble();
-    _storage[1] = y.toDouble();
-  }
-
-  Vector2.copy(Vector2 other) {
-    _storage[0] = other.x;
-    _storage[1] = other.y;
-  }
-
-  Vector2.all(double value) {
-    _storage[0] = value;
-    _storage[1] = value;
-  }
-
-  static Random? _random;
-
-  Vector2.random([Random? random]) {
-    random ??= (_random ??= Random());
-    _storage[0] = random.nextDouble();
-    _storage[1] = random.nextDouble();
-  }
-
-  final _storage = Float64List(2);
-
-  double operator [](int index) => _storage[index];
-  double get x => _storage[0];
-  double get y => _storage[1];
-  Vector2 clone() => .copy(this);
-
+  /// True if both components are zero.
   bool get isZero => x == 0 && y == 0;
+
+  /// True if any component is infinite.
   bool get isInfinite => x.isInfinite || y.isInfinite;
+
+  /// True if any component is NaN.
   bool get isNaN => x.isNaN || y.isNaN;
+
+  /// The length of the vector.
   double get length => sqrt(length2);
+
+  /// The squared length of the vector.
   double get length2 => x * x + y * y;
+
+  /// Distance from this to [other].
   double distance(Vector2 other) => sqrt(distance2(other));
+
+  /// Squared distance from this to [other].
   double distance2(Vector2 other) {
     final dx = x - other.x;
     final dy = y - other.y;
     return dx * dx + dy * dy;
   }
 
+  /// Returns the angle between this vector and [other] in radians.
   double angleTo(Vector2 other) {
     if (this == other) return 0;
     final cosine = dot(other) / (length * other.length);
     return acos(cosine.clamp(-1.0, 1.0));
   }
 
+  /// Returns the signed angle between this and [other] in radians.
   double angleToSigned(Vector2 other) {
     if (this == other) return 0;
     final sine = cross(other);
@@ -68,38 +61,103 @@ class Vector2 implements Mutable<MutableVector2> {
     return atan2(sine, cosine);
   }
 
+  /// Negate.
   Vector2 operator -() => .new(-x, -y);
+
+  /// Add two vectors.
   Vector2 operator +(Vector2 other) => .new(x + other.x, y + other.y);
+
+  /// Subtract two vectors.
   Vector2 operator -(Vector2 other) => .new(x - other.x, y - other.y);
-  Vector2 operator *(double value) => scale(value);
-  Vector2 operator /(double value) => scale(1.0 / value);
+
+  /// Scale.
+  Vector2 operator *(double value) => scaled(value);
+
+  /// Scale.
+  Vector2 operator /(double value) => scaled(1.0 / value);
+
+  /// Inner product.
   double dot(Vector2 other) => x * other.x + y * other.y;
+
+  /// Cross product.
   double cross(Vector2 other) => x * other.y - y * other.x;
-  Vector2 absolute() => clone()..mutate().absolute();
-  Vector2 scale(double value) => clone()..mutate().scale(value);
-  Vector2 multiply(Vector2 other) => clone()..mutate().multiply(other);
-  Vector2 max(Vector2 other) => clone()..mutate().max(other);
-  Vector2 min(Vector2 other) => clone()..mutate().min(other);
-  Vector2 normalize() => clone()..mutate().normalize();
-  Vector2 reflect(Vector2 normal) => clone()..mutate().reflect(normal);
-  Vector2 clamp(Vector2 xRange, [Vector2? yRange]) => clone()..mutate().clamp(xRange, yRange);
-  Vector2 clampTo(double min, double max) => clone()..mutate().clampTo(min, max);
+
+  /// Floored copy of this.
+  Vector2 floored() => .new(x.floorToDouble(), y.floorToDouble());
+
+  /// Ceiled copy of this.
+  Vector2 ceiled() => .new(x.ceilToDouble(), y.ceilToDouble());
+
+  /// Rounded copy of this.
+  Vector2 rounded() => .new(x.roundToDouble(), y.roundToDouble());
+
+  /// Copy of this, rounded towards zero.
+  Vector2 roundedToZero() => .new(
+    x < 0 ? x.ceilToDouble() : x.floorToDouble(),
+    y < 0 ? y.ceilToDouble() : y.floorToDouble(),
+  );
+
+  /// Return a copy of this scaled by [value].
+  Vector2 scaled(double value) => .new(x * value, y * value);
+
+  /// Copy of this multiplied by [other].
+  Vector2 multiplied(Vector2 other) => .new(x * other.x, y * other.y);
+
+  /// Normalized copy of this.
+  Vector2 normalized() {
+    final length = this.length;
+    if (length == 0) return .new(x, y);
+
+    final scale = 1 / length;
+    return .new(x * scale, y * scale);
+  }
+
+  /// Reflected copy of this.
+  Vector2 reflected(Vector2 normal) {
+    final dotProduct = dot(normal) * 2;
+    return .new(x - normal.x * dotProduct, y - normal.y * dotProduct);
+  }
+
+  /// Copy of this with each component clamped between [range.x] and
+  /// [range.y].
+  Vector2 clamped(Vector2 range) => .new(
+    x.clamp(range.x, range.y).toDouble(),
+    y.clamp(range.x, range.y).toDouble(),
+  );
+
+  /// Copy of this with the x component clamped between [range.x] and
+  /// [range.y].
+  Vector2 clampedX(Vector2 range) =>
+      .new(x.clamp(range.x, range.y).toDouble(), y);
+
+  /// Copy of this with the y component clamped between [range.x] and
+  /// [range.y].
+  Vector2 clampedY(Vector2 range) =>
+      .new(x, y.clamp(range.x, range.y).toDouble());
+
+  /// Copy of this with each component clamped between [min] and [max].
+  Vector2 clampedTo(double min, double max) =>
+      .new(x.clamp(min, max).toDouble(), y.clamp(min, max).toDouble());
+
+  /// Copy of this with the x component clamped between [min] and [max].
+  Vector2 clampedToX(double min, double max) =>
+      .new(x.clamp(min, max).toDouble(), y);
+
+  /// Copy of this with the y component clamped between [min] and [max].
+  Vector2 clampedToY(double min, double max) =>
+      .new(x, y.clamp(min, max).toDouble());
 
   /// Transforms this by [matrix] and returns the result.
-  Vector2 transformWith(Matrix3 matrix) => clone()..mutate().transformWith(matrix);
+  Vector2 transformed(Matrix3 matrix) => .new(
+    (matrix[0] * x) + (matrix[3] * y) + matrix[6],
+    (matrix[1] * x) + (matrix[4] * y) + matrix[7],
+  );
 
-  /// Rotates this by the absolute rotation of the top-left 2x2 of [matrix],
-  /// ignoring translation, and returns the result. Primarily used by AABB
-  /// transformation code.
-  Vector2 absoluteRotate2With(Matrix3 matrix) => clone()..mutate().absoluteRotate2With(matrix);
-
-  @override
-  MutableVector2 mutate() => MutableVector2._(this);
-  void modify(void Function(MutableVector2 vector) mutation) => mutation(mutate());
-
+  /// Returns a printable string.
   @override
   String toString() => '($x, $y)';
 
+  /// Check if two vectors are the same.
   @override
   bool operator ==(Object other) =>
       other is Vector2 && //
@@ -107,141 +165,174 @@ class Vector2 implements Mutable<MutableVector2> {
       y == other.y;
 
   @override
-  int get hashCode => Object.hashAll(_storage);
+  int get hashCode => Object.hash(x, y);
 }
 
-extension type MutableVector2._(Vector2 source) {
-  Float64List get storage => source._storage;
-  double operator [](int index) => source[index];
-  double get x => source.x;
-  double get y => source.y;
-  bool get isZero => source.isZero;
-  bool get isInfinite => source.isInfinite;
-  bool get isNaN => source.isNaN;
-  double get length => source.length;
-  double get length2 => source.length2;
-  double distance(Vector2 other) => source.distance(other);
-  double distance2(Vector2 other) => source.distance2(other);
-  double angleTo(Vector2 other) => source.angleTo(other);
-  double angleToSigned(Vector2 other) => source.angleToSigned(other);
-  double dot(Vector2 other) => source.dot(other);
-  double cross(Vector2 other) => source.cross(other);
+class Vector2 with _Vector2 {
+  @override
+  final double x;
 
+  @override
+  final double y;
+
+  /// Construct a new vector with the specified values.
+  const Vector2(this.x, this.y);
+
+  /// Splat [value] into all lanes of the vector.
+  const Vector2.all(double value) : x = value, y = value;
+
+  /// Casts [x] and [y] to doubles.
+  factory Vector2.cast(num x, num y) => .new(x.toDouble(), y.toDouble());
+
+  /// Copy of [other].
+  factory Vector2.copy(Vector2 other) => .new(other.x, other.y);
+
+  /// Canonical zero vector.
+  static const Vector2 zero = .all(0);
+
+  /// Clone of this.
+  Vector2 clone() => .copy(this);
+}
+
+class MVector2 with _Vector2 implements Vector2 {
+  @override
+  double x;
+
+  @override
+  double y;
+
+  /// Construct a new vector with the specified values.
+  MVector2(this.x, this.y);
+
+  /// Zero vector.
+  MVector2.zero() : x = 0, y = 0;
+
+  /// Splat [value] into all lanes of the vector.
+  MVector2.all(double value) : x = value, y = value;
+
+  /// Casts [x] and [y] to doubles.
+  factory MVector2.cast(num x, num y) => .new(x.toDouble(), y.toDouble());
+
+  /// Copy of [other].
+  factory MVector2.copy(Vector2 other) => .new(other.x, other.y);
+
+  /// Clone of this.
+  @override
+  MVector2 clone() => .copy(this);
+
+  /// Set the component of the vector at the index [index].
   void operator []=(int index, double value) {
-    source._storage[index] = value;
+    switch (index) {
+      case 0:
+        x = value;
+
+      case 1:
+        y = value;
+
+      default:
+        throw RangeError.value(index, 'index');
+    }
   }
 
-  set x(double value) {
-    source._storage[0] = value;
-  }
-
-  set y(double value) {
-    source._storage[1] = value;
-  }
-
+  /// Set the values by copying them from [other].
   void setFrom(Vector2 other) {
     x = other.x;
     y = other.y;
   }
 
+  /// Set the values of the vector.
   void setValues(double x, double y) {
     this.x = x;
     this.y = y;
   }
 
-  void setAll(double value) {
+  /// Splat [value] into all lanes of the vector.
+  void splat(double value) {
     x = value;
     y = value;
   }
 
+  /// Negate.
   void negate() {
     x = -x;
     y = -y;
   }
 
+  /// Absolute value.
   void absolute() {
     x = x.abs();
     y = y.abs();
   }
 
-  void clamp(Vector2 xRange, [Vector2? yRange]) {
-    yRange ??= xRange;
-    x = x.clamp(xRange.x, xRange.y).toDouble();
-    y = y.clamp(yRange.x, yRange.y).toDouble();
-  }
-
-  void clampTo(double min, double max) {
-    x = x.clamp(min, max).toDouble();
-    y = y.clamp(min, max).toDouble();
-  }
-
+  /// Floor entries in this.
   void floor() {
     x = x.floorToDouble();
     y = y.floorToDouble();
   }
 
+  /// Ceil entries in this.
   void ceil() {
     x = x.ceilToDouble();
     y = y.ceilToDouble();
   }
 
+  /// Round entries in this.
   void round() {
     x = x.roundToDouble();
     y = y.roundToDouble();
   }
 
+  /// Round entries in this towards zero.
   void roundToZero() {
     x = x < 0 ? x.ceilToDouble() : x.floorToDouble();
     y = y < 0 ? y.ceilToDouble() : y.floorToDouble();
   }
 
+  /// Add [other] to this.
   void add(Vector2 other) {
     x += other.x;
     y += other.y;
   }
 
-  void addAll(double value) {
-    x += value;
-    y += value;
-  }
-
+  /// Subtract [other] from this.
   void subtract(Vector2 other) {
     x -= other.x;
     y -= other.y;
   }
 
-  void subtractAll(double value) {
-    x -= value;
-    y -= value;
-  }
-
+  /// Scale this by [value].
   void scale(double value) {
     x *= value;
     y *= value;
   }
 
+  /// Multiply entries in this with entries in [other].
   void multiply(Vector2 other) {
     x *= other.x;
     y *= other.y;
   }
 
+  /// Set this to the component-wise maximum of this and [other].
   void max(Vector2 other) {
     x = math.max(x, other.x);
     y = math.max(y, other.y);
   }
 
+  /// Set this to the component-wise minimum of this and [other].
   void min(Vector2 other) {
     x = math.min(x, other.x);
     y = math.min(y, other.y);
   }
 
+  /// Add [other] scaled by [value] to this.
   void addScaled(Vector2 other, double value) {
     x += other.x * value;
     y += other.y * value;
   }
 
+  /// Normalize this. Returns the length of the vector before normalization.
   double normalize() {
-    final length = source.length;
+    final length = this.length;
     if (length == 0) return 0;
 
     final scale = 1 / length;
@@ -250,14 +341,47 @@ extension type MutableVector2._(Vector2 source) {
     return length;
   }
 
+  /// Reflect this.
   void reflect(Vector2 normal) {
-    final dotProduct = normal.dot(source) * 2;
+    final dotProduct = normal.dot(this) * 2;
     x -= normal.x * dotProduct;
     y -= normal.y * dotProduct;
   }
 
+  /// Clamp each component of this between [range.x] and [range.y].
+  void clamp(Vector2 range) {
+    x = x.clamp(range.x, range.y).toDouble();
+    y = y.clamp(range.x, range.y).toDouble();
+  }
+
+  /// Clamp the x component of this between [range.x] and [range.y].
+  void clampX(Vector2 range) {
+    x = x.clamp(range.x, range.y).toDouble();
+  }
+
+  /// Clamp the y component of this between [range.x] and [range.y].
+  void clampY(Vector2 range) {
+    y = y.clamp(range.x, range.y).toDouble();
+  }
+
+  /// Clamp each component of this between [min] and [max].
+  void clampTo(double min, double max) {
+    x = x.clamp(min, max).toDouble();
+    y = y.clamp(min, max).toDouble();
+  }
+
+  /// Clamp the x component of this between [min] and [max].
+  void clampToX(double min, double max) {
+    x = x.clamp(min, max).toDouble();
+  }
+
+  /// Clamp the y component of this between [min] and [max].
+  void clampToY(double min, double max) {
+    y = y.clamp(min, max).toDouble();
+  }
+
   /// Transforms this by [matrix] in place.
-  void transformWith(Matrix3 matrix) {
+  void transform(Matrix3 matrix) {
     final oldX = x;
     final oldY = y;
     x = (matrix[0] * oldX) + (matrix[3] * oldY) + matrix[6];
@@ -267,7 +391,7 @@ extension type MutableVector2._(Vector2 source) {
   /// Rotates this by the absolute rotation of the top-left 2x2 of [matrix],
   /// ignoring translation, in place. Primarily used by AABB transformation
   /// code.
-  void absoluteRotate2With(Matrix3 matrix) {
+  void absoluteRotate2(Matrix3 matrix) {
     final m00 = matrix[0].abs();
     final m01 = matrix[3].abs();
     final m10 = matrix[1].abs();

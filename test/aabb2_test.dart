@@ -4,45 +4,60 @@ import 'package:test/test.dart';
 import 'support/matchers.dart';
 
 void main() {
-  group('construction', () {
+  group('Aabb2', () {
     test('creates a zero AABB', () {
-      expectAabb2(Aabb2(), 0, 0, 0, 0);
+      expectAabb2(Aabb2.zero, 0, 0, 0, 0);
+    });
+
+    test('reuses a canonical zero instance', () {
+      expect(identical(Aabb2.zero, Aabb2.zero), isTrue);
     });
 
     test('creates an AABB from min and max points', () {
-      expectAabb2(Aabb2.minMax(Vector2(1, 2), Vector2(3, 4)), 1, 2, 3, 4);
+      expectAabb2(Aabb2(.new(1, 2), .new(3, 4)), 1, 2, 3, 4);
     });
 
-    test('does not share storage with the min/max arguments', () {
+    test('supports a const primary constructor', () {
+      const aabb = Aabb2(.zero, .zero);
       final min = Vector2(1, 2);
       final max = Vector2(3, 4);
-      final aabb = Aabb2.minMax(min, max);
+      final aliased = Aabb2(min, max);
 
-      min.mutate().x = 99;
-      max.mutate().y = 99;
+      expectAabb2(aabb, 0, 0, 0, 0);
+      expect(identical(aliased.min, min), isTrue);
+      expect(identical(aliased.max, max), isTrue);
+    });
 
-      expectAabb2(aabb, 1, 2, 3, 4);
+    test('rejects mutable corners', () {
+      final mutable = MVector2.all(5);
+
+      expect(() => Aabb2(mutable, .zero), throwsA(isA<AssertionError>()));
+      expect(() => Aabb2(.zero, mutable), throwsA(isA<AssertionError>()));
+    });
+
+    test('creates an AABB from a center and half extents', () {
+      expectAabb2(Aabb2.centerAndHalfExtents(.all(5), .new(2, 3)), 3, 2, 7, 8);
     });
 
     test('copies without sharing storage', () {
-      final original = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
+      final original = MAabb2(.new(1, 2), .new(3, 4));
       final copy = Aabb2.copy(original);
 
-      original.mutate().setValues(9, 9, 9, 9);
+      original.setValues(9, 9, 9, 9);
 
       expectAabb2(copy, 1, 2, 3, 4);
     });
 
-    test('creates an AABB from a center and half extents', () {
-      final aabb = Aabb2.centerAndHalfExtents(Vector2(5, 5), Vector2(2, 3));
+    test('clones without sharing storage', () {
+      final aabb = Aabb2(.new(1, 2), .new(3, 4));
+      final clone = aabb.clone();
 
-      expectAabb2(aabb, 3, 2, 7, 8);
+      expectAabb2(clone, 1, 2, 3, 4);
+      expect(clone, isNot(same(aabb)));
     });
-  });
 
-  group('immutable view', () {
     test('returns the same live min and max corners on every access', () {
-      final aabb = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
+      final aabb = Aabb2(.new(1, 2), .new(3, 4));
 
       expect(identical(aabb.min, aabb.min), isTrue);
       expect(identical(aabb.max, aabb.max), isTrue);
@@ -51,61 +66,30 @@ void main() {
     });
 
     test('reads the center', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(4, 2));
+      final aabb = Aabb2(.all(0), .new(4, 2));
 
       expectVector2(aabb.center, 2, 1);
     });
 
     test('reads the width and height', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(4, 2));
+      final aabb = Aabb2(.all(0), .new(4, 2));
 
       expect(aabb.width, 4);
       expect(aabb.height, 2);
     });
 
     test('reads a positive width and height when min and max are inverted', () {
-      final aabb = Aabb2.minMax(Vector2(4, 2), Vector2(0, 0));
+      final aabb = Aabb2(.new(4, 2), .all(0));
 
       expect(aabb.width, 4);
       expect(aabb.height, 2);
     });
 
-    test('clones without sharing storage', () {
-      final aabb = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
-      final clone = aabb.clone();
-
-      aabb.mutate().setValues(9, 9, 9, 9);
-
-      expectAabb2(clone, 1, 2, 3, 4);
-    });
-
-    test('creates a hulled copy without changing its sources', () {
-      final a = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
-      final b = Aabb2.minMax(Vector2(1, 1), Vector2(3, 3));
-
-      final hulled = a.hull(b);
-
-      expectAabb2(hulled, 0, 0, 3, 3);
-      expectAabb2(a, 0, 0, 2, 2);
-      expectAabb2(b, 1, 1, 3, 3);
-    });
-
-    test('creates a copy hulled with a point without changing its sources', () {
-      final a = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
-      final point = Vector2(5, -1);
-
-      final hulled = a.hullPoint(point);
-
-      expectAabb2(hulled, 0, -1, 5, 2);
-      expectAabb2(a, 0, 0, 2, 2);
-      expectVector2(point, 5, -1);
-    });
-
     test('detects per-axis overlap independently', () {
-      final a = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
-      final sameX = Aabb2.minMax(Vector2(1, 5), Vector2(3, 6));
-      final sameY = Aabb2.minMax(Vector2(5, 1), Vector2(6, 3));
-      final neither = Aabb2.minMax(Vector2(5, 5), Vector2(6, 6));
+      final a = Aabb2(.all(0), .all(2));
+      final sameX = Aabb2(.new(1, 5), .new(3, 6));
+      final sameY = Aabb2(.new(5, 1), .new(6, 3));
+      final neither = Aabb2(.all(5), .all(6));
 
       expect(a.overlapsX(sameX), isTrue);
       expect(a.overlapsY(sameX), isFalse);
@@ -116,111 +100,161 @@ void main() {
     });
 
     test('detects full containment', () {
-      final outer = Aabb2.minMax(Vector2(0, 0), Vector2(10, 10));
-      final inner = Aabb2.minMax(Vector2(2, 2), Vector2(8, 8));
+      final outer = Aabb2(.all(0), .all(10));
+      final inner = Aabb2(.all(2), .all(8));
 
       expect(outer.containsAabb2(inner), isTrue);
       expect(inner.containsAabb2(outer), isFalse);
     });
 
     test('detects point containment', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(10, 10));
+      final aabb = Aabb2(.all(0), .all(10));
 
-      expect(aabb.containsVector2(Vector2(5, 5)), isTrue);
-      expect(aabb.containsVector2(Vector2(10, 10)), isFalse);
+      expect(aabb.containsVector2(.all(5)), isTrue);
+      expect(aabb.containsVector2(.all(10)), isFalse);
     });
 
     test('detects intersection with another AABB', () {
-      final a = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
-      final b = Aabb2.minMax(Vector2(1, 1), Vector2(3, 3));
-      final c = Aabb2.minMax(Vector2(5, 5), Vector2(6, 6));
+      final a = Aabb2(.all(0), .all(2));
+      final b = Aabb2(.all(1), .all(3));
+      final c = Aabb2(.all(5), .all(6));
 
       expect(a.intersectsWithAabb2(b), isTrue);
       expect(a.intersectsWithAabb2(c), isFalse);
     });
 
     test('detects intersection with a point', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
+      final aabb = Aabb2(.all(0), .all(2));
 
-      expect(aabb.intersectsWithVector2(Vector2(2, 2)), isTrue);
-      expect(aabb.intersectsWithVector2(Vector2(3, 3)), isFalse);
+      expect(aabb.intersectsWithVector2(.all(2)), isTrue);
+      expect(aabb.intersectsWithVector2(.all(3)), isFalse);
     });
 
-    test('compares and hashes by component values', () {
-      final first = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
-      final equal = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
+    test('compares and hashes by component values across both forms', () {
+      final immutable = Aabb2(.new(1, 2), .new(3, 4));
+      final mutable = MAabb2(.new(1, 2), .new(3, 4));
 
-      expect(first, equal);
-      expect(first.hashCode, equal.hashCode);
-      expect(first, isNot(Aabb2.minMax(Vector2(0, 2), Vector2(3, 4))));
-      expect(first, isNot(Object()));
+      expect(immutable, mutable);
+      expect(immutable.hashCode, mutable.hashCode);
+      expect(immutable, isNot(Aabb2(.new(0, 2), .new(3, 4))));
+      expect(immutable, isNot(Object()));
     });
 
     test('formats both corners', () {
-      expect(Aabb2.minMax(Vector2(1, 2), Vector2(3, 4)).toString(), '(1.0, 2.0) -> (3.0, 4.0)');
+      expect(
+        Aabb2(.new(1, 2), .new(3, 4)).toString(),
+        '(1.0, 2.0) -> (3.0, 4.0)',
+      );
     });
   });
 
-  group('mutable view', () {
-    test('reads through without changing the source', () {
-      final aabb = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
-      final mutable = aabb.mutate();
+  group('MAabb2', () {
+    test('creates a zero AABB', () {
+      expectAabb2(MAabb2.zero(), 0, 0, 0, 0);
+    });
 
-      expect(identical(mutable.min, aabb.min), isTrue);
-      expect(identical(mutable.max, aabb.max), isTrue);
-      expect(mutable.containsVector2(Vector2(2, 3)), isTrue);
-      expect(mutable.overlapsX(Aabb2.minMax(Vector2(2, 5), Vector2(4, 6))), isTrue);
-      expect(mutable.overlapsY(Aabb2.minMax(Vector2(5, 5), Vector2(6, 6))), isFalse);
-      expect(mutable.intersectsWithAabb2(Aabb2.minMax(Vector2(2, 2), Vector2(5, 5))), isTrue);
+    test('creates an AABB from min and max points', () {
+      expectAabb2(MAabb2(.new(1, 2), .new(3, 4)), 1, 2, 3, 4);
+    });
+
+    test('copies min/max passed to the primary constructor', () {
+      final min = MVector2(1, 2);
+      final max = MVector2(3, 4);
+      final aabb = MAabb2(min, max);
+
+      min.x = 99;
+      max.y = 99;
+
       expectAabb2(aabb, 1, 2, 3, 4);
     });
 
-    test('modifies through a closure', () {
-      final aabb = Aabb2();
+    test('converts between immutable and mutable forms via copy', () {
+      final immutable = Aabb2(.new(1, 2), .new(3, 4));
+      final mutable = MAabb2.copy(immutable);
 
-      aabb.modify((mutable) => mutable.setValues(1, 2, 3, 4));
+      mutable.setValues(9, 9, 9, 9);
+      expectAabb2(immutable, 1, 2, 3, 4);
+      expectAabb2(mutable, 9, 9, 9, 9);
+
+      final frozen = Aabb2.copy(mutable);
+      mutable.setValues(0, 0, 0, 0);
+
+      expectAabb2(frozen, 9, 9, 9, 9);
+    });
+
+    test('creates an AABB from a center and half extents', () {
+      expectAabb2(MAabb2.centerAndHalfExtents(.all(5), .new(2, 3)), 3, 2, 7, 8);
+    });
+
+    test('clones without sharing storage', () {
+      final aabb = MAabb2(.new(1, 2), .new(3, 4));
+      final clone = aabb.clone();
+
+      expectAabb2(clone, 1, 2, 3, 4);
+      expect(clone, isNot(same(aabb)));
+
+      clone.setValues(99, 99, 99, 99);
+
+      expectAabb2(aabb, 1, 2, 3, 4);
+    });
+
+    test('reads through without changing the source', () {
+      final aabb = MAabb2(.new(1, 2), .new(3, 4));
+
+      expect(aabb.containsVector2(.new(2, 3)), isTrue);
+      expect(aabb.overlapsX(Aabb2(.new(2, 5), .new(4, 6))), isTrue);
+      expect(aabb.overlapsY(Aabb2(.all(5), .all(6))), isFalse);
+      expect(aabb.intersectsWithAabb2(Aabb2(.all(2), .all(5))), isTrue);
+      expectAabb2(aabb, 1, 2, 3, 4);
+    });
+
+    test('chains mutations via cascades', () {
+      final aabb = MAabb2.zero();
+
+      aabb.setValues(1, 2, 3, 4);
 
       expectAabb2(aabb, 1, 2, 3, 4);
     });
 
     test('sets both corners from another AABB without sharing storage', () {
-      final aabb = Aabb2();
-      final other = Aabb2.minMax(Vector2(1, 2), Vector2(3, 4));
+      final aabb = MAabb2.zero();
+      final other = Aabb2(.new(1, 2), .new(3, 4));
 
-      aabb.mutate().setFrom(other);
-      other.mutate().setValues(9, 9, 9, 9);
+      aabb.setFrom(other);
+      aabb.min.x = 99;
 
-      expectAabb2(aabb, 1, 2, 3, 4);
+      expectAabb2(aabb, 99, 2, 3, 4);
+      expectAabb2(other, 1, 2, 3, 4);
     });
 
     test('sets both corners from raw components', () {
-      final aabb = Aabb2();
+      final aabb = MAabb2.zero();
 
-      aabb.mutate().setValues(1, 2, 3, 4);
+      aabb.setValues(1, 2, 3, 4);
 
       expectAabb2(aabb, 1, 2, 3, 4);
     });
 
     test('sets from a center and half extents in place', () {
-      final aabb = Aabb2();
+      final aabb = MAabb2.zero();
 
-      aabb.mutate().setCenterAndHalfExtents(Vector2(5, 5), Vector2(2, 3));
+      aabb.setCenterAndHalfExtents(.all(5), .new(2, 3));
 
       expectAabb2(aabb, 3, 2, 7, 8);
     });
 
     test('hulls with another AABB in place', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
+      final aabb = MAabb2(.all(0), .all(2));
 
-      aabb.mutate().hull(Aabb2.minMax(Vector2(1, 1), Vector2(3, 3)));
+      aabb.hull(Aabb2(.all(1), .all(3)));
 
       expectAabb2(aabb, 0, 0, 3, 3);
     });
 
     test('hulls with a point in place', () {
-      final aabb = Aabb2.minMax(Vector2(0, 0), Vector2(2, 2));
+      final aabb = MAabb2(.all(0), .all(2));
 
-      aabb.mutate().hullPoint(Vector2(5, -1));
+      aabb.hullPoint(.new(5, -1));
 
       expectAabb2(aabb, 0, -1, 5, 2);
     });

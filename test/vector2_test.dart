@@ -6,13 +6,25 @@ import 'package:test/test.dart';
 import 'support/matchers.dart';
 
 void main() {
-  group('construction', () {
+  group('Vector2', () {
     test('creates a zero vector', () {
-      expectVector2(Vector2.zero(), 0, 0);
+      expectVector2(Vector2.zero, 0, 0);
+    });
+
+    test('reuses a canonical zero instance', () {
+      expect(identical(Vector2.zero, Vector2.zero), isTrue);
     });
 
     test('creates a vector from doubles', () {
       expectVector2(Vector2(1.5, -2.5), 1.5, -2.5);
+    });
+
+    test('is const-constructible', () {
+      const vector = Vector2(1.5, -2.5);
+      const zero = Vector2.zero;
+
+      expectVector2(vector, 1.5, -2.5);
+      expectVector2(zero, 0, 0);
     });
 
     test('casts numeric values to doubles', () {
@@ -20,10 +32,10 @@ void main() {
     });
 
     test('copies without sharing storage', () {
-      final original = Vector2(1, 2);
+      final original = MVector2(1, 2);
       final copy = Vector2.copy(original);
 
-      original.mutate().x = 3;
+      original.x = 3;
 
       expectVector2(copy, 1, 2);
     });
@@ -32,18 +44,6 @@ void main() {
       expectVector2(Vector2.all(2.5), 2.5, 2.5);
     });
 
-    test('uses the supplied random source', () {
-      final expected = Random(42);
-      final expectedX = expected.nextDouble();
-      final expectedY = expected.nextDouble();
-      final vector = Vector2.random(Random(42));
-
-      expect(vector.x, closeTo(expectedX, 0.0000001));
-      expect(vector.y, closeTo(expectedY, 0.0000001));
-    });
-  });
-
-  group('immutable view', () {
     test('reads components by index and name', () {
       final vector = Vector2(1, 2);
 
@@ -58,13 +58,12 @@ void main() {
       final vector = Vector2(1, 2);
       final clone = vector.clone();
 
-      vector.mutate().y = 3;
-
       expectVector2(clone, 1, 2);
+      expect(clone, isNot(same(vector)));
     });
 
     test('detects zero vectors', () {
-      expect(Vector2.zero().isZero, isTrue);
+      expect(Vector2.zero.isZero, isTrue);
       expect(Vector2(-0.0, 0).isZero, isTrue);
       expect(Vector2(0, 1).isZero, isFalse);
     });
@@ -86,7 +85,6 @@ void main() {
 
       expect(vector.length, 5);
       expect(vector.length2, 25);
-      expectVector2(vector, 3, 4);
     });
 
     test('computes distance and squared distance', () {
@@ -97,8 +95,6 @@ void main() {
       expect(first.distance2(second), 25);
       expect(second.distance(first), 5);
       expect(second.distance2(first), 25);
-      expectVector2(first, 1, 2);
-      expectVector2(second, 4, 6);
     });
 
     test('computes the unsigned angle between vectors', () {
@@ -109,9 +105,6 @@ void main() {
       expect(right.angleTo(right), 0);
       expect(right.angleTo(up), closeTo(pi / 2, 0.0000001));
       expect(right.angleTo(left), closeTo(pi, 0.0000001));
-      expectVector2(right, 1, 0);
-      expectVector2(up, 0, 1);
-      expectVector2(left, -1, 0);
     });
 
     test('computes the signed angle between vectors', () {
@@ -121,170 +114,153 @@ void main() {
       expect(right.angleToSigned(right), 0);
       expect(right.angleToSigned(up), closeTo(pi / 2, 0.0000001));
       expect(up.angleToSigned(right), closeTo(-pi / 2, 0.0000001));
-      expectVector2(right, 1, 0);
-      expectVector2(up, 0, 1);
     });
 
-    test('creates a normalized copy without changing the source', () {
+    test('creates a normalized copy', () {
       final vector = Vector2(3, 4);
 
-      final normalized = vector.normalize();
+      final normalized = vector.normalized();
 
       expect(normalized.x, closeTo(0.6, 0.0000001));
       expect(normalized.y, closeTo(0.8, 0.0000001));
-      expectVector2(vector, 3, 4);
     });
 
     test('normalizes a zero vector to a separate zero vector', () {
-      final vector = Vector2.zero();
+      final vector = Vector2.zero;
 
-      final normalized = vector.normalize();
+      final normalized = vector.normalized();
 
       expect(normalized, isNot(same(vector)));
       expectVector2(normalized, 0, 0);
-      expectVector2(vector, 0, 0);
     });
 
-    test('creates a component-wise absolute copy without changing the source', () {
-      final vector = Vector2(-1, 2);
+    test('creates floored, ceiled, rounded, and round-to-zero copies', () {
+      final vector = Vector2(1.9, -1.1);
 
-      final absolute = vector.absolute();
-
-      expectVector2(absolute, 1, 2);
-      expectVector2(vector, -1, 2);
+      expectVector2(vector.floored(), 1, -2);
+      expectVector2(vector.ceiled(), 2, -1);
+      expectVector2(Vector2(1.6, -1.6).rounded(), 2, -2);
+      expectVector2(Vector2(1.9, -1.9).roundedToZero(), 1, -1);
     });
 
-    test('computes dot and cross products without changing its sources', () {
+    test('computes dot and cross products', () {
       final first = Vector2(2, 3);
       final second = Vector2(4, 5);
 
       expect(first.dot(second), 23);
       expect(first.cross(second), -2);
       expect(second.cross(first), 2);
-      expectVector2(first, 2, 3);
-      expectVector2(second, 4, 5);
     });
 
-    test('creates a scaled copy without changing the source', () {
+    test('creates a scaled copy', () {
       final vector = Vector2(2, 3);
 
-      final scaled = vector.scale(4);
+      final scaled = vector.scaled(4);
 
       expectVector2(scaled, 8, 12);
-      expectVector2(vector, 2, 3);
     });
 
-    test(
-      'creates a component-wise multiplied copy without changing its sources',
-      () {
-        final vector = Vector2(2, 3);
-        final other = Vector2(4, 5);
+    test('creates a component-wise multiplied copy', () {
+      final vector = Vector2(2, 3);
+      final other = Vector2(4, 5);
 
-        final multiplied = vector.multiply(other);
+      final multiplied = vector.multiplied(other);
 
-        expectVector2(multiplied, 8, 15);
-        expectVector2(vector, 2, 3);
-        expectVector2(other, 4, 5);
-      },
-    );
-
-    test('creates a component-wise maximum copy without changing its sources', () {
-      final vector = Vector2(2, 5);
-      final other = Vector2(4, 3);
-
-      final maximum = vector.max(other);
-
-      expectVector2(maximum, 4, 5);
-      expectVector2(vector, 2, 5);
-      expectVector2(other, 4, 3);
+      expectVector2(multiplied, 8, 15);
     });
 
-    test('creates a component-wise minimum copy without changing its sources', () {
-      final vector = Vector2(2, 5);
-      final other = Vector2(4, 3);
-
-      final minimum = vector.min(other);
-
-      expectVector2(minimum, 2, 3);
-      expectVector2(vector, 2, 5);
-      expectVector2(other, 4, 3);
-    });
-
-    test('creates a reflected copy without changing its sources', () {
+    test('creates a reflected copy', () {
       final vector = Vector2(1, -1);
       final normal = Vector2(0, 1);
 
-      final reflected = vector.reflect(normal);
+      final reflected = vector.reflected(normal);
 
       expectVector2(reflected, 1, 1);
-      expectVector2(vector, 1, -1);
-      expectVector2(normal, 0, 1);
     });
 
-    test('creates a copy clamped to component ranges', () {
+    test('creates a copy clamped to one range on both components', () {
+      final vector = Vector2(-2, 10);
+      final range = Vector2(1, 5);
+
+      final clamped = vector.clamped(range);
+
+      expectVector2(clamped, 1, 5);
+    });
+
+    test('creates a copy clamped to a range on just the x component', () {
+      final vector = Vector2(-2, 10);
+      final range = Vector2(1, 5);
+
+      final clamped = vector.clampedX(range);
+
+      expectVector2(clamped, 1, 10);
+    });
+
+    test('creates a copy clamped to a range on just the y component', () {
+      final vector = Vector2(-2, 10);
+      final range = Vector2(1, 5);
+
+      final clamped = vector.clampedY(range);
+
+      expectVector2(clamped, -2, 5);
+    });
+
+    test('creates copies clamped per-axis to different ranges', () {
       final vector = Vector2(0.5, 10);
       final xRange = Vector2(-1, 1);
       final yRange = Vector2(0, 5);
 
-      final clamped = vector.clamp(xRange, yRange);
+      final clamped = vector.clampedX(xRange).clampedY(yRange);
 
       expectVector2(clamped, 0.5, 5);
-      expectVector2(vector, 0.5, 10);
-      expectVector2(xRange, -1, 1);
-      expectVector2(yRange, 0, 5);
     });
 
-    test('uses one range for both components when clamping a copy', () {
-      final vector = Vector2(-2, 10);
-      final range = Vector2(1, 5);
-
-      final clamped = vector.clamp(range);
-
-      expectVector2(clamped, 1, 5);
-      expectVector2(vector, -2, 10);
-      expectVector2(range, 1, 5);
-    });
-
-    test('creates a copy clamped between scalar bounds', () {
+    test('creates a copy clamped between scalar bounds on both components', () {
       final vector = Vector2(-2, 10);
 
-      final clamped = vector.clampTo(-1, 5);
+      final clamped = vector.clampedTo(-1, 5);
 
       expectVector2(clamped, -1, 5);
-      expectVector2(vector, -2, 10);
-    });
-
-    test('creates a transformed copy without changing the source', () {
-      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
-      final point = Vector2(1, 1);
-
-      final transformed = point.transformWith(matrix);
-
-      expectVector2(transformed, 12, 23);
-      expectVector2(point, 1, 1);
     });
 
     test(
-      'creates a copy rotated by the absolute rotation of a matrix without changing the source',
+      'creates a copy clamped between scalar bounds on just the x component',
       () {
-        final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
-        final point = Vector2(2, 3);
+        final vector = Vector2(-2, 10);
 
-        final rotated = point.absoluteRotate2With(matrix);
+        final clamped = vector.clampedToX(-1, 5);
 
-        expectVector2(rotated, 3, 2);
-        expectVector2(point, 2, 3);
+        expectVector2(clamped, -1, 10);
       },
     );
 
-    test('negates without changing the source', () {
+    test(
+      'creates a copy clamped between scalar bounds on just the y component',
+      () {
+        final vector = Vector2(-2, 10);
+
+        final clamped = vector.clampedToY(-1, 5);
+
+        expectVector2(clamped, -2, 5);
+      },
+    );
+
+    test('creates a transformed copy', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final point = Vector2(1, 1);
+
+      final transformed = point.transformed(matrix);
+
+      expectVector2(transformed, 12, 23);
+    });
+
+    test('negates', () {
       final vector = Vector2(1, -2);
 
       expectVector2(-vector, -1, 2);
-      expectVector2(vector, 1, -2);
     });
 
-    test('performs arithmetic without changing its sources', () {
+    test('performs arithmetic', () {
       final first = Vector2(8, 6);
       final second = Vector2(2, 3);
 
@@ -292,18 +268,16 @@ void main() {
       expectVector2(first - second, 6, 3);
       expectVector2(first * 2.5, 20, 15);
       expectVector2(first / 2, 4, 3);
-      expectVector2(first, 8, 6);
-      expectVector2(second, 2, 3);
     });
 
-    test('compares and hashes by component values', () {
-      final first = Vector2(1, 2);
-      final equal = Vector2(1, 2);
+    test('compares and hashes by component values across both forms', () {
+      final immutable = Vector2(1, 2);
+      final mutable = MVector2(1, 2);
 
-      expect(first, equal);
-      expect(first.hashCode, equal.hashCode);
-      expect(first, isNot(Vector2(2, 1)));
-      expect(first, isNot(Object()));
+      expect(immutable, mutable);
+      expect(immutable.hashCode, mutable.hashCode);
+      expect(immutable, isNot(Vector2(2, 1)));
+      expect(immutable, isNot(Object()));
     });
 
     test('formats both components', () {
@@ -311,179 +285,202 @@ void main() {
     });
   });
 
-  group('mutable view', () {
-    test('reads and computes without changing the source', () {
-      final vector = Vector2(8, 6);
-      final mutable = vector.mutate();
-
-      expect(mutable[0], 8);
-      expect(mutable[1], 6);
-      expect(mutable.x, 8);
-      expect(mutable.y, 6);
-      expect(mutable.isZero, isFalse);
-      expect(mutable.isInfinite, isFalse);
-      expect(mutable.isNaN, isFalse);
-      expect(mutable.dot(Vector2(2, 3)), 34);
-      expect(mutable.cross(Vector2(2, 3)), 12);
-      expectVector2(vector, 8, 6);
+  group('MVector2', () {
+    test('creates a zero vector', () {
+      expectVector2(MVector2.zero(), 0, 0);
     });
 
-    test('modifies through a closure', () {
-      final vector = Vector2(1, 2);
+    test('creates a vector from doubles', () {
+      expectVector2(MVector2(1.5, -2.5), 1.5, -2.5);
+    });
 
-      vector.modify((mutable) {
-        mutable
-          ..add(Vector2(3, 4))
-          ..scale(2);
-      });
+    test('casts numeric values to doubles', () {
+      expectVector2(MVector2.cast(1, 2.5), 1, 2.5);
+    });
+
+    test('converts between immutable and mutable forms via copy', () {
+      final immutable = Vector2(1, 2);
+      final mutable = MVector2.copy(immutable);
+
+      mutable.x = 3;
+      expectVector2(immutable, 1, 2);
+      expectVector2(mutable, 3, 2);
+
+      final frozen = Vector2.copy(mutable);
+      mutable.x = 99;
+
+      expectVector2(frozen, 3, 2);
+    });
+
+    test('fills both components with one value', () {
+      expectVector2(MVector2.all(2.5), 2.5, 2.5);
+    });
+
+    test('chains mutations via cascades', () {
+      final vector = MVector2(1, 2);
+
+      vector
+        ..add(Vector2(3, 4))
+        ..scale(2);
 
       expectVector2(vector, 8, 12);
     });
 
-    test('detects infinite and NaN components', () {
-      final vector = Vector2(double.infinity, double.nan);
-      final mutable = vector.mutate();
-
-      expect(mutable.isInfinite, isTrue);
-      expect(mutable.isNaN, isTrue);
-      expect(vector.x, double.infinity);
-      expect(vector.y, isNaN);
-    });
-
-    test('passes length and distance calculations through', () {
-      final vector = Vector2(3, 4);
-      final mutable = vector.mutate();
-      final other = Vector2.zero();
-
-      expect(mutable.length, 5);
-      expect(mutable.length2, 25);
-      expect(mutable.distance(other), 5);
-      expect(mutable.distance2(other), 25);
-      expectVector2(vector, 3, 4);
-      expectVector2(other, 0, 0);
-    });
-
-    test('passes angle calculations through', () {
-      final vector = Vector2(1, 0);
-      final mutable = vector.mutate();
-      final other = Vector2(0, 1);
-
-      expect(mutable.angleTo(other), closeTo(pi / 2, 0.0000001));
-      expect(mutable.angleToSigned(other), closeTo(pi / 2, 0.0000001));
-      expectVector2(vector, 1, 0);
-      expectVector2(other, 0, 1);
-    });
-
     test('writes components by index and name', () {
-      final vector = Vector2.zero();
-      final mutable = vector.mutate();
+      final vector = MVector2.zero();
 
-      mutable[0] = 1;
-      mutable.y = 2;
-      mutable.x = 3;
+      vector[0] = 1;
+      vector[1] = 2;
 
-      expectVector2(vector, 3, 2);
-      expect(() => mutable[2] = 4, throwsRangeError);
+      expectVector2(vector, 1, 2);
+      expect(() => vector[2] = 4, throwsRangeError);
+
+      vector.x = 3;
+      vector.y = 4;
+
+      expectVector2(vector, 3, 4);
+    });
+
+    test('clones without sharing storage', () {
+      final vector = MVector2(1, 2);
+      final clone = vector.clone();
+
+      expectVector2(clone, 1, 2);
+      expect(clone, isNot(same(vector)));
+
+      clone.x = 99;
+
+      expectVector2(vector, 1, 2);
     });
 
     test('sets both components from another vector', () {
-      final vector = Vector2.zero();
+      final vector = MVector2.zero();
 
-      vector.mutate().setFrom(Vector2(1, 2));
+      vector.setFrom(Vector2(1, 2));
 
       expectVector2(vector, 1, 2);
     });
 
     test('splats one value across both components', () {
-      final vector = Vector2.zero();
+      final vector = MVector2.zero();
 
-      vector.mutate().setAll(2.5);
+      vector.splat(2.5);
 
       expectVector2(vector, 2.5, 2.5);
     });
 
     test('negates both components in place', () {
-      final vector = Vector2(1, -2);
+      final vector = MVector2(1, -2);
 
-      vector.mutate().negate();
+      vector.negate();
 
       expectVector2(vector, -1, 2);
     });
 
     test('takes the absolute value of both components in place', () {
-      final vector = Vector2(-1.5, 2.5);
+      final vector = MVector2(-1.5, 2.5);
 
-      vector.mutate().absolute();
+      vector.absolute();
 
       expectVector2(vector, 1.5, 2.5);
     });
 
-    test('clamps both components to their ranges in place', () {
-      final vector = Vector2(0.5, 10);
+    test('clamps both components to one range in place', () {
+      final vector = MVector2(-2, 10);
+
+      vector.clamp(Vector2(1, 5));
+
+      expectVector2(vector, 1, 5);
+    });
+
+    test('clamps just the x component to a range in place', () {
+      final vector = MVector2(-2, 10);
+
+      vector.clampX(Vector2(1, 5));
+
+      expectVector2(vector, 1, 10);
+    });
+
+    test('clamps just the y component to a range in place', () {
+      final vector = MVector2(-2, 10);
+
+      vector.clampY(Vector2(1, 5));
+
+      expectVector2(vector, -2, 5);
+    });
+
+    test('clamps each axis to a different range in place', () {
+      final vector = MVector2(0.5, 10);
       final xRange = Vector2(-1, 1);
       final yRange = Vector2(0, 5);
 
-      vector.mutate().clamp(xRange, yRange);
+      vector
+        ..clampX(xRange)
+        ..clampY(yRange);
 
       expectVector2(vector, 0.5, 5);
-      expectVector2(xRange, -1, 1);
-      expectVector2(yRange, 0, 5);
-    });
-
-    test('uses one range for both components when clamping in place', () {
-      final vector = Vector2(-2, 10);
-      final range = Vector2(1, 5);
-
-      vector.mutate().clamp(range);
-
-      expectVector2(vector, 1, 5);
-      expectVector2(range, 1, 5);
     });
 
     test('clamps both components between scalar bounds in place', () {
-      final vector = Vector2(-2, 10);
+      final vector = MVector2(-2, 10);
 
-      vector.mutate().clampTo(-1, 5);
+      vector.clampTo(-1, 5);
 
       expectVector2(vector, -1, 5);
     });
 
-    test('floors both components in place', () {
-      final vector = Vector2(1.9, -1.1);
+    test('clamps just the x component between scalar bounds in place', () {
+      final vector = MVector2(-2, 10);
 
-      vector.mutate().floor();
+      vector.clampToX(-1, 5);
+
+      expectVector2(vector, -1, 10);
+    });
+
+    test('clamps just the y component between scalar bounds in place', () {
+      final vector = MVector2(-2, 10);
+
+      vector.clampToY(-1, 5);
+
+      expectVector2(vector, -2, 5);
+    });
+
+    test('floors both components in place', () {
+      final vector = MVector2(1.9, -1.1);
+
+      vector.floor();
 
       expectVector2(vector, 1, -2);
     });
 
     test('ceils both components in place', () {
-      final vector = Vector2(1.1, -1.9);
+      final vector = MVector2(1.1, -1.9);
 
-      vector.mutate().ceil();
+      vector.ceil();
 
       expectVector2(vector, 2, -1);
     });
 
     test('rounds both components in place', () {
-      final vector = Vector2(1.6, -1.6);
+      final vector = MVector2(1.6, -1.6);
 
-      vector.mutate().round();
+      vector.round();
 
       expectVector2(vector, 2, -2);
     });
 
     test('rounds both components toward zero in place', () {
-      final vector = Vector2(1.9, -1.9);
+      final vector = MVector2(1.9, -1.9);
 
-      vector.mutate().roundToZero();
+      vector.roundToZero();
 
       expectVector2(vector, 1, -1);
     });
 
     test('normalizes in place and returns the previous length', () {
-      final vector = Vector2(3, 4);
+      final vector = MVector2(3, 4);
 
-      final length = vector.mutate().normalize();
+      final length = vector.normalize();
 
       expect(length, 5);
       expect(vector.x, closeTo(0.6, 0.0000001));
@@ -491,124 +488,93 @@ void main() {
     });
 
     test('leaves a zero vector unchanged when normalized in place', () {
-      final vector = Vector2.zero();
+      final vector = MVector2.zero();
 
-      final length = vector.mutate().normalize();
+      final length = vector.normalize();
 
       expect(length, 0);
       expectVector2(vector, 0, 0);
     });
 
-    test(
-      'passes dot and cross products through without changing the source',
-      () {
-        final vector = Vector2(2, 3);
-        final mutable = vector.mutate();
-        final other = Vector2(4, 5);
-
-        expect(mutable.dot(other), 23);
-        expect(mutable.cross(other), -2);
-        expectVector2(vector, 2, 3);
-        expectVector2(other, 4, 5);
-      },
-    );
-
     test('adds a vector in place', () {
-      final vector = Vector2(1, 2);
+      final vector = MVector2(1, 2);
 
-      vector.mutate().add(Vector2(3, 4));
+      vector.add(Vector2(3, 4));
 
       expectVector2(vector, 4, 6);
     });
 
-    test('adds one value to both components in place', () {
-      final vector = Vector2(1, 2);
-
-      vector.mutate().addAll(3);
-
-      expectVector2(vector, 4, 5);
-    });
-
     test('subtracts a vector in place', () {
-      final vector = Vector2(5, 7);
+      final vector = MVector2(5, 7);
 
-      vector.mutate().subtract(Vector2(2, 3));
+      vector.subtract(Vector2(2, 3));
 
       expectVector2(vector, 3, 4);
     });
 
-    test('subtracts one value from both components in place', () {
-      final vector = Vector2(5, 7);
-
-      vector.mutate().subtractAll(2);
-
-      expectVector2(vector, 3, 5);
-    });
-
     test('scales both components by one value in place', () {
-      final vector = Vector2(2, 3);
+      final vector = MVector2(2, 3);
 
-      vector.mutate().scale(4);
+      vector.scale(4);
 
       expectVector2(vector, 8, 12);
     });
 
     test('multiplies by a vector in place', () {
-      final vector = Vector2(2, 3);
+      final vector = MVector2(2, 3);
 
-      vector.mutate().multiply(Vector2(4, 5));
+      vector.multiply(Vector2(4, 5));
 
       expectVector2(vector, 8, 15);
     });
 
     test('sets to the component-wise maximum in place', () {
-      final vector = Vector2(2, 5);
+      final vector = MVector2(2, 5);
 
-      vector.mutate().max(Vector2(4, 3));
+      vector.max(Vector2(4, 3));
 
       expectVector2(vector, 4, 5);
     });
 
     test('sets to the component-wise minimum in place', () {
-      final vector = Vector2(2, 5);
+      final vector = MVector2(2, 5);
 
-      vector.mutate().min(Vector2(4, 3));
+      vector.min(Vector2(4, 3));
 
       expectVector2(vector, 2, 3);
     });
 
     test('adds a scaled vector in place', () {
-      final vector = Vector2(1, 2);
+      final vector = MVector2(1, 2);
 
-      vector.mutate().addScaled(Vector2(3, 4), 2);
+      vector.addScaled(Vector2(3, 4), 2);
 
       expectVector2(vector, 7, 10);
     });
 
-    test('reflects in place without changing the normal', () {
-      final vector = Vector2(1, -1);
+    test('reflects in place', () {
+      final vector = MVector2(1, -1);
       final normal = Vector2(0, 1);
 
-      vector.mutate().reflect(normal);
+      vector.reflect(normal);
 
       expectVector2(vector, 1, 1);
-      expectVector2(normal, 0, 1);
     });
 
     test('transforms a point in place', () {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
-      final point = Vector2(1, 1);
+      final point = MVector2(1, 1);
 
-      point.mutate().transformWith(matrix);
+      point.transform(matrix);
 
       expectVector2(point, 12, 23);
     });
 
     test('rotates a point in place by the absolute rotation of a matrix', () {
       final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
-      final point = Vector2(2, 3);
+      final point = MVector2(2, 3);
 
-      point.mutate().absoluteRotate2With(matrix);
+      point.absoluteRotate2(matrix);
 
       expectVector2(point, 3, 2);
     });
