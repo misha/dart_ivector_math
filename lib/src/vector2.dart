@@ -197,6 +197,9 @@ class Vector2 with _Vector2 {
   /// Canonical zero vector.
   static const Vector2 zero = .all(0);
 
+  /// Canonical infinity vector.
+  static const Vector2 infinity = .all(double.infinity);
+
   /// Component-wise minimum of [a] and [b].
   static Vector2 min(Vector2 a, Vector2 b) =>
       .new(math.min(a.x, b.x), math.min(a.y, b.y));

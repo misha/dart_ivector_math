@@ -15,6 +15,15 @@ void main() {
       expect(identical(Vector2.zero, Vector2.zero), isTrue);
     });
 
+    test('creates an infinity vector', () {
+      expectVector2(Vector2.infinity, double.infinity, double.infinity);
+      expect(Vector2.infinity.isInfinite, isTrue);
+    });
+
+    test('reuses a canonical infinity instance', () {
+      expect(identical(Vector2.infinity, Vector2.infinity), isTrue);
+    });
+
     test('creates a vector from doubles', () {
       expectVector2(Vector2(1.5, -2.5), 1.5, -2.5);
     });
