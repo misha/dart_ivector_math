@@ -1,3 +1,10 @@
+## 0.1.0
+
+- Rewrite pretty much the entire package. As promised, before 1.0.0 things are changing dramatically.
+- The new premise is significantly more straightforward: two types, `Vector2` and `MVector2`, with the mutable type implementing the immutable one.
+- Update all implementations, tests, and documentation.
+- Bring in comments from `vector_math`, supplemented with additional documentation for additions/deviations from their API.
+
 ## 0.0.5
 
 - Implement `min`/`max` for `Vector2`.
