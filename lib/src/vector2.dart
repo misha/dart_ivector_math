@@ -197,6 +197,14 @@ class Vector2 with _Vector2 {
   /// Canonical zero vector.
   static const Vector2 zero = .all(0);
 
+  /// Component-wise minimum of [a] and [b].
+  static Vector2 min(Vector2 a, Vector2 b) =>
+      .new(math.min(a.x, b.x), math.min(a.y, b.y));
+
+  /// Component-wise maximum of [a] and [b].
+  static Vector2 max(Vector2 a, Vector2 b) =>
+      .new(math.max(a.x, b.x), math.max(a.y, b.y));
+
   /// Clone of this.
   Vector2 clone() => .copy(this);
 }

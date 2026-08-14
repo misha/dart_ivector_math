@@ -265,6 +265,32 @@ void main() {
       expectVector2(clamped, 0.5, 5);
     });
 
+    test('takes the component-wise minimum of two vectors', () {
+      final a = Vector2(1, 5);
+      final b = Vector2(3, 2);
+
+      expectVector2(Vector2.min(a, b), 1, 2);
+    });
+
+    test('takes the component-wise maximum of two vectors', () {
+      final a = Vector2(1, 5);
+      final b = Vector2(3, 2);
+
+      expectVector2(Vector2.max(a, b), 3, 5);
+    });
+
+    test('combines mutable vectors without sharing storage', () {
+      final a = MVector2(1, 5);
+      final b = MVector2(3, 2);
+
+      final minimum = Vector2.min(a, b);
+      final maximum = Vector2.max(a, b);
+      a.x = 100;
+
+      expectVector2(minimum, 1, 2);
+      expectVector2(maximum, 3, 5);
+    });
+
     test('creates a transformed copy', () {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
       final point = Vector2(1, 1);
