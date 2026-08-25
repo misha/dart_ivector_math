@@ -30,11 +30,10 @@ The following classes from `vector_math` are planned. The subset was selected on
 - [ ] `Vector3`/`MVector3`
 - [x] `Matrix3`/`MMatrix3`
 - [x] `Aabb2`/`MAabb2`
-- [ ] `Aabb3`/`MAabb3`
 - [ ] `Quad`/`MQuad`
 - [ ] `Ray`/`MRay`
 - [ ] Intersections
-- [ ] Benchmarks
+- [ ] Benchmarks/Optimizations
 
 Until these items are complete, the package will remain below version 1.0, and all APIs are subject to drastic and potentially uncomfortable change.
 
