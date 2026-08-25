@@ -1,3 +1,9 @@
+## 0.2.0
+
+- Implement `Matrix4` and `MMatrix4`.
+- Implement `Quad` and `MQuad`.
+- Remove `transform` from `Matrix3`. You can still do them directly on `Vector2`. Future matrix types will follow the same convention.
+
 ## 0.1.1
 
 - Implement `clampBetween`/`clampedBetween` for `Vector2`.

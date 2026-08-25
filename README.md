@@ -27,10 +27,11 @@ void main() {
 The following classes from `vector_math` are planned. The subset was selected on the basis of my personal usage of `vector_math` for 2D game development in Dart.
 
 - [x] `Vector2`/`MVector2`
-- [ ] `Vector3`/`MVector3`
+- [x] `Vector3`/`MVector3`
 - [x] `Matrix3`/`MMatrix3`
+- [x] `Matrix4`/`MMatrix4`
 - [x] `Aabb2`/`MAabb2`
-- [ ] `Quad`/`MQuad`
+- [x] `Quad`/`MQuad`
 - [ ] `Ray`/`MRay`
 - [ ] Intersections
 - [ ] Benchmarks/Optimizations

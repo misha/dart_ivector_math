@@ -134,19 +134,6 @@ void main() {
       expect(approximate.absoluteError(correct), closeTo(0.1, 0.0000001));
     });
 
-    test(
-      'transforms a point into a new Vector2 without changing the source',
-      () {
-        final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
-        final point = Vector2(1, 1);
-
-        final transformed = matrix.transformed(point);
-
-        expectVector2(transformed, 12, 23);
-        expectVector2(point, 1, 1);
-      },
-    );
-
     test('copies into an array', () {
       final array = List<double>.filled(9, 0);
 
@@ -407,7 +394,6 @@ void main() {
       expect(matrix.trace(), 15);
       expect(matrix.isIdentity(), isFalse);
       expect(matrix.isZero(), isFalse);
-      expect(matrix.transformed(.new(1, 1)), Vector2(12, 15));
       expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [7, 8, 9]);
     });
 

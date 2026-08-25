@@ -1,8 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'vector2.dart';
-
 /// Shared operations for [Matrix3] and [MMatrix3]. Values are stored in
 /// column-major order.
 mixin _Matrix3 {
@@ -79,12 +77,6 @@ mixin _Matrix3 {
   /// Returns the absolute error between this and [correct].
   double absoluteError(Matrix3 correct) =>
       (infinityNorm() - correct.infinityNorm()).abs();
-
-  /// Transforms [point] by this and returns the result.
-  Vector2 transformed(Vector2 point) => .new(
-    (this[0] * point.x) + (this[3] * point.y) + this[6],
-    (this[1] * point.x) + (this[4] * point.y) + this[7],
-  );
 
   /// Copies this into [array] starting at [offset].
   void copyIntoArray(List<num> array, [int offset = 0]) {

@@ -8,6 +8,9 @@
     "aabb",
     "adjugate",
     "ivector",
+    "postmultiplied",
+    "postmultiplies",
+    "postmultiply",
     "premultiplies",
     "reimplementation"
   ],
