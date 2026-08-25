@@ -448,6 +448,22 @@ void main() {
       );
     });
 
+    test('sets all points from values without sharing storage', () {
+      final quad = MQuad.zero();
+      final point0 = MVector3(1, 2, 3);
+
+      quad.setPoints(point0, .new(4, 5, 6), .new(7, 8, 9), .new(10, 11, 12));
+      point0.x = 99;
+
+      expectQuad(
+        quad,
+        .new(1, 2, 3),
+        .new(4, 5, 6),
+        .new(7, 8, 9),
+        .new(10, 11, 12),
+      );
+    });
+
     test('transforms in place', () {
       final matrix = Matrix4(
         // dart format off

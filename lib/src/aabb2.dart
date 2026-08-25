@@ -1,3 +1,4 @@
+import 'matrix3.dart';
 import 'vector2.dart';
 
 /// Shared operations for [Aabb2] and [MAabb2]. Defines a 2-dimensional
@@ -24,35 +25,55 @@ mixin _Aabb2 {
   /// The center of the AABB. Allocates a new [Vector2].
   Vector2 get center => .new(centerX, centerY);
 
-  /// Return if this contains [other].
+  /// The half extents of the AABB. Allocates a new [Vector2].
+  Vector2 get halfExtents => .new((max.x - min.x) / 2, (max.y - min.y) / 2);
+
+  /// True if this contains [other].
   bool containsAabb2(Aabb2 other) =>
       min.x < other.min.x && //
       min.y < other.min.y &&
       max.x > other.max.x &&
       max.y > other.max.y;
 
-  /// Return if this contains [point].
+  /// True if this contains [point].
   bool containsVector2(Vector2 point) =>
       min.x < point.x && //
       min.y < point.y &&
       max.x > point.x &&
       max.y > point.y;
 
-  /// Return if this and [other] overlap on the x axis.
+  /// True if this and [other] overlap on the x axis.
   bool overlapsX(Aabb2 other) => min.x <= other.max.x && max.x >= other.min.x;
 
-  /// Return if this and [other] overlap on the y axis.
+  /// True if this and [other] overlap on the y axis.
   bool overlapsY(Aabb2 other) => min.y <= other.max.y && max.y >= other.min.y;
 
-  /// Return if this intersects with [other].
+  /// True if this intersects with [other].
   bool intersectsWithAabb2(Aabb2 other) => overlapsX(other) && overlapsY(other);
 
-  /// Return if this intersects with [point].
+  /// True if this intersects with [point].
   bool intersectsWithVector2(Vector2 point) =>
       min.x <= point.x && //
       min.y <= point.y &&
       max.x >= point.x &&
       max.y >= point.y;
+
+  /// Copy of this transformed by [matrix].
+  Aabb2 transformed(Matrix3 matrix) {
+    final center = this.center.transformed(matrix);
+    final halfExtents = this.halfExtents.absoluteRotated(matrix);
+    return .new(center - halfExtents, center + halfExtents);
+  }
+
+  /// Copy of this rotated by the rotation matrix [matrix].
+  Aabb2 rotated(Matrix3 matrix) {
+    final center = this.center;
+    final halfExtents = this.halfExtents.absoluteRotated(matrix);
+    return .new(center - halfExtents, center + halfExtents);
+  }
+
+  /// Copy of this translated by [offset].
+  Aabb2 translated(Vector2 offset) => .new(min + offset, max + offset);
 
   /// Returns a printable string.
   @override
@@ -81,8 +102,7 @@ class Aabb2 with _Aabb2 {
       );
 
   /// Create a new AABB as a copy of [other].
-  factory Aabb2.copy(Aabb2 other) => //
-      .new(.copy(other.min), .copy(other.max));
+  factory Aabb2.copy(Aabb2 other) => .new(.copy(other.min), .copy(other.max));
 
   /// Create a new AABB with a [center] and [halfExtents].
   factory Aabb2.centerAndHalfExtents(Vector2 center, Vector2 halfExtents) =>
@@ -128,33 +148,53 @@ class MAabb2 with _Aabb2 implements Aabb2 {
   @override
   MAabb2 clone() => .copy(this);
 
-  /// Copy the [min] and [max] from [other] into this.
+  /// Sets the corners of this by copying them from [other].
   void setFrom(Aabb2 other) {
     min.setFrom(other.min);
     max.setFrom(other.max);
   }
 
-  /// Set both corners from raw components.
+  /// Sets both corners from raw components.
   void setValues(double minX, double minY, double maxX, double maxY) {
     min.setValues(minX, minY);
     max.setValues(maxX, maxY);
   }
 
-  /// Set the AABB by a [center] and [halfExtents].
+  /// Sets the AABB by a [center] and [halfExtents].
   void setCenterAndHalfExtents(Vector2 center, Vector2 halfExtents) {
     min.setValues(center.x - halfExtents.x, center.y - halfExtents.y);
     max.setValues(center.x + halfExtents.x, center.y + halfExtents.y);
   }
 
-  /// Set the min and max of this so that this is a hull of this and [other].
+  /// Sets the min and max of this so that this is a hull of this and [other].
   void hull(Aabb2 other) {
     min.min(other.min);
     max.max(other.max);
   }
 
-  /// Set the min and max of this so that this contains [point].
+  /// Sets the min and max of this so that this contains [point].
   void hullPoint(Vector2 point) {
     min.min(point);
     max.max(point);
+  }
+
+  /// Transforms this by [matrix].
+  void transform(Matrix3 matrix) {
+    final center = this.center.transformed(matrix);
+    final halfExtents = this.halfExtents.absoluteRotated(matrix);
+    setCenterAndHalfExtents(center, halfExtents);
+  }
+
+  /// Rotates this by the rotation matrix [matrix].
+  void rotate(Matrix3 matrix) {
+    final center = this.center;
+    final halfExtents = this.halfExtents.absoluteRotated(matrix);
+    setCenterAndHalfExtents(center, halfExtents);
+  }
+
+  /// Translates this by [offset].
+  void translate(Vector2 offset) {
+    min.add(offset);
+    max.add(offset);
   }
 }

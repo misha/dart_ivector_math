@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'matrix3.dart';
@@ -40,8 +40,8 @@ mixin _Matrix4 {
   /// Returns the trace of the matrix: the sum of the diagonal entries.
   double trace() => this[0] + this[5] + this[10] + this[15];
 
-  /// Is this the identity matrix?
-  bool isIdentity() =>
+  /// True if this is the identity matrix.
+  bool get isIdentity =>
       // dart format off
       this[0] == 1.0 && this[1] == 0.0 && this[2] == 0.0 && this[3] == 0.0 &&
       this[4] == 0.0 && this[5] == 1.0 && this[6] == 0.0 && this[7] == 0.0 &&
@@ -49,8 +49,8 @@ mixin _Matrix4 {
       this[12] == 0.0 && this[13] == 0.0 && this[14] == 0.0 && this[15] == 1.0;
       // dart format on
 
-  /// Is this the zero matrix?
-  bool isZero() {
+  /// True if this is the zero matrix.
+  bool get isZero {
     for (var i = 0; i < 16; i += 1) {
       if (this[i] != 0.0) {
         return false;
@@ -85,11 +85,11 @@ mixin _Matrix4 {
   double absoluteError(Matrix4 correct) =>
       (infinityNorm() - correct.infinityNorm()).abs();
 
-  /// The translation part of this. Allocates a new [Vector3].
-  Vector3 get translation => .new(this[12], this[13], this[14]);
+  /// Returns the translation part of this. Allocates a new [Vector3].
+  Vector3 getTranslation() => .new(this[12], this[13], this[14]);
 
-  /// The upper-left 3x3 of this. Allocates a new [Matrix3].
-  Matrix3 get rotation => .new(
+  /// Returns the upper-left 3x3 of this. Allocates a new [Matrix3].
+  Matrix3 getRotation() => .new(
     // dart format off
     this[0], this[1], this[2],
     this[4], this[5], this[6],
@@ -125,7 +125,7 @@ mixin _Matrix4 {
   );
 
   /// Returns this multiplied by a scale matrix of [scale]. Note the order.
-  Matrix4 scaledBy(Vector3 scale) {
+  Matrix4 scaledByVector3(Vector3 scale) {
     final sx = scale.x, sy = scale.y, sz = scale.z;
 
     return .new(
@@ -148,11 +148,93 @@ mixin _Matrix4 {
       this[0], this[1], this[2],  this[3],
       this[4], this[5], this[6],  this[7],
       this[8], this[9], this[10], this[11],
-      // dart format on
       (this[0] * tx) + (this[4] * ty) + (this[8] * tz) + this[12],
       (this[1] * tx) + (this[5] * ty) + (this[9] * tz) + this[13],
       (this[2] * tx) + (this[6] * ty) + (this[10] * tz) + this[14],
       (this[3] * tx) + (this[7] * ty) + (this[11] * tz) + this[15],
+      // dart format on
+    );
+  }
+
+  /// Returns a translation matrix of [translation] multiplied by this. Note
+  /// the order.
+  Matrix4 leftTranslated(Vector3 translation) {
+    final tx = translation.x, ty = translation.y, tz = translation.z;
+    final w0 = this[3], w1 = this[7], w2 = this[11], w3 = this[15];
+
+    return .new(
+      // dart format off
+      this[0]  + (tx * w0), this[1]  + (ty * w0), this[2]  + (tz * w0), w0,
+      this[4]  + (tx * w1), this[5]  + (ty * w1), this[6]  + (tz * w1), w1,
+      this[8]  + (tx * w2), this[9]  + (ty * w2), this[10] + (tz * w2), w2,
+      this[12] + (tx * w3), this[13] + (ty * w3), this[14] + (tz * w3), w3,
+      // dart format on
+    );
+  }
+
+  /// Returns this multiplied by a rotation of [radians] around the x axis.
+  /// Note the order.
+  Matrix4 rotatedX(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+
+    return .new(
+      // dart format off
+      this[0], this[1], this[2], this[3],
+      (this[4] * c) + (this[8] * s),
+      (this[5] * c) + (this[9] * s),
+      (this[6] * c) + (this[10] * s),
+      (this[7] * c) + (this[11] * s),
+      (this[4] * -s) + (this[8] * c),
+      (this[5] * -s) + (this[9] * c),
+      (this[6] * -s) + (this[10] * c),
+      (this[7] * -s) + (this[11] * c),
+      this[12], this[13], this[14], this[15],
+      // dart format on
+    );
+  }
+
+  /// Returns this multiplied by a rotation of [radians] around the y axis.
+  /// Note the order.
+  Matrix4 rotatedY(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+
+    return .new(
+      // dart format off
+      (this[0] * c) + (this[8] * -s),
+      (this[1] * c) + (this[9] * -s),
+      (this[2] * c) + (this[10] * -s),
+      (this[3] * c) + (this[11] * -s),
+      this[4], this[5], this[6], this[7],
+      (this[0] * s) + (this[8] * c),
+      (this[1] * s) + (this[9] * c),
+      (this[2] * s) + (this[10] * c),
+      (this[3] * s) + (this[11] * c),
+      this[12], this[13], this[14], this[15],
+      // dart format on
+    );
+  }
+
+  /// Returns this multiplied by a rotation of [radians] around the z axis.
+  /// Note the order.
+  Matrix4 rotatedZ(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+
+    return .new(
+      // dart format off
+      (this[0] * c) + (this[4] * s),
+      (this[1] * c) + (this[5] * s),
+      (this[2] * c) + (this[6] * s),
+      (this[3] * c) + (this[7] * s),
+      (this[0] * -s) + (this[4] * c),
+      (this[1] * -s) + (this[5] * c),
+      (this[2] * -s) + (this[6] * c),
+      (this[3] * -s) + (this[7] * c),
+      this[8],  this[9],  this[10], this[11],
+      this[12], this[13], this[14], this[15],
+      // dart format on
     );
   }
 
@@ -228,7 +310,7 @@ mixin _Matrix4 {
     );
   }
 
-  /// Returns this matrix transposed, then multiplied by [arg].
+  /// Returns this matrix transposed, then multiplied by [arg]. Note the order.
   Matrix4 transposeMultiplied(Matrix4 arg) {
     final m00 = this[0], m01 = this[1], m02 = this[2], m03 = this[3];
     final m10 = this[4], m11 = this[5], m12 = this[6], m13 = this[7];
@@ -259,7 +341,7 @@ mixin _Matrix4 {
     );
   }
 
-  /// Returns this matrix multiplied by [arg] transposed.
+  /// Returns this matrix multiplied by [arg] transposed. Note the order.
   Matrix4 multiplyTransposed(Matrix4 arg) {
     final m00 = this[0], m01 = this[4], m02 = this[8], m03 = this[12];
     final m10 = this[1], m11 = this[5], m12 = this[9], m13 = this[13];
@@ -367,7 +449,7 @@ mixin _Matrix4 {
     // dart format on
   );
 
-  /// Negate.
+  /// Negated copy of this.
   Matrix4 operator -() => .new(
     // dart format off
     -this[0],  -this[1],  -this[2],  -this[3],
@@ -418,7 +500,7 @@ mixin _Matrix4 {
 }
 
 class Matrix4 with _Matrix4 {
-  /// A matrix with the given values, in column-major order.
+  /// Create a new matrix with the given values, in column-major order.
   Matrix4(
     // dart format off
     double arg0,  double arg1,  double arg2,  double arg3,
@@ -445,7 +527,7 @@ class Matrix4 with _Matrix4 {
     _storage[15] = arg15;
   }
 
-  /// A matrix with the given [values], in column-major order.
+  /// Create a new matrix with the given [values], in column-major order.
   factory Matrix4.fromList(List<double> values) => .new(
     // dart format off
     values[0],  values[1],  values[2],  values[3],
@@ -467,22 +549,22 @@ class Matrix4 with _Matrix4 {
 
   /// Rotation of [radians] around the x axis.
   factory Matrix4.rotationX(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     return .new(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1);
   }
 
   /// Rotation of [radians] around the y axis.
   factory Matrix4.rotationY(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     return .new(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
   }
 
   /// Rotation of [radians] around the z axis.
   factory Matrix4.rotationZ(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     return .new(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   }
 
@@ -532,10 +614,7 @@ class Matrix4 with _Matrix4 {
 }
 
 class MMatrix4 with _Matrix4 implements Matrix4 {
-  /// Constructs a new matrix filled with zeros.
-  MMatrix4.zero();
-
-  /// A matrix with the given values, in column-major order.
+  /// Create a new matrix with the given values, in column-major order.
   MMatrix4(
     // dart format off
     double arg0,  double arg1,  double arg2,  double arg3,
@@ -562,7 +641,10 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     _storage[15] = arg15;
   }
 
-  /// A matrix with the given [values], in column-major order.
+  /// Create a new matrix with all entries set to zero.
+  MMatrix4.zero();
+
+  /// Create a new matrix with the given [values], in column-major order.
   factory MMatrix4.fromList(List<double> values) => .new(
     // dart format off
     values[0],  values[1],  values[2],  values[3],
@@ -586,13 +668,16 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
   factory MMatrix4.identity() => .zero()..setIdentity();
 
   /// Rotation of [radians] around the x axis.
-  factory MMatrix4.rotationX(double radians) => .zero()..setRotationX(radians);
+  factory MMatrix4.rotationX(double radians) =>
+      .identity()..setRotationX(radians);
 
   /// Rotation of [radians] around the y axis.
-  factory MMatrix4.rotationY(double radians) => .zero()..setRotationY(radians);
+  factory MMatrix4.rotationY(double radians) =>
+      .identity()..setRotationY(radians);
 
   /// Rotation of [radians] around the z axis.
-  factory MMatrix4.rotationZ(double radians) => .zero()..setRotationZ(radians);
+  factory MMatrix4.rotationZ(double radians) =>
+      .identity()..setRotationZ(radians);
 
   /// Translation by [translation].
   factory MMatrix4.translation(Vector3 translation) =>
@@ -603,12 +688,11 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
       .identity()..setTranslationRaw(x, y, z);
 
   /// Scale by [scale].
-  factory MMatrix4.diagonal3(Vector3 scale) =>
-      .diagonal3Values(scale.x, scale.y, scale.z);
+  factory MMatrix4.diagonal3(Vector3 scale) => .identity()..setDiagonal3(scale);
 
   /// Scale by [x], [y], and [z].
   factory MMatrix4.diagonal3Values(double x, double y, double z) =>
-      .new(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
+      .identity()..setDiagonal3Values(x, y, z);
 
   @override
   final _storage = Float64List(16);
@@ -620,19 +704,28 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
   @override
   MMatrix4 clone() => .copy(this);
 
-  /// Set the element of the matrix at the index [index].
+  /// Sets the element of the matrix at the index [index].
   void operator []=(int index, double value) {
     _storage[index] = value;
   }
 
-  /// Set the value at [row], [col] to [value].
+  /// Sets the value at [row], [col] to [value].
   void setEntry(int row, int col, double value) {
     assert(row >= 0 && row < dimension);
     assert(col >= 0 && col < dimension);
     _storage[(col * 4) + row] = value;
   }
 
-  /// Sets the matrix with the given values, in column-major order.
+  /// Sets the values of this by copying them from [other].
+  void setFrom(Matrix4 other) {
+    final storage = _storage;
+
+    for (var i = 0; i < 16; i += 1) {
+      storage[i] = other[i];
+    }
+  }
+
+  /// Sets the values of this, in column-major order.
   void setValues(
     // dart format off
     double arg0,  double arg1,  double arg2,  double arg3,
@@ -660,14 +753,6 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = arg15;
   }
 
-  /// Sets the entire matrix to the matrix in [arg].
-  void setFrom(Matrix4 arg) {
-    final storage = _storage;
-    for (var i = 0; i < 16; i += 1) {
-      storage[i] = arg[i];
-    }
-  }
-
   /// Copies elements from [array] into this starting at [offset].
   void copyFromArray(List<double> array, [int offset = 0]) {
     final storage = _storage;
@@ -693,51 +778,67 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     // dart format on
   }
 
-  /// Set the diagonal of the matrix.
-  void setDiagonal(double arg) {
+  /// Sets the diagonal of the matrix to [value].
+  void setDiagonal(double value) {
     final storage = _storage;
-    storage[0] = arg;
-    storage[5] = arg;
-    storage[10] = arg;
-    storage[15] = arg;
+    storage[0] = value;
+    storage[5] = value;
+    storage[10] = value;
+    storage[15] = value;
   }
 
-  /// Turns the matrix into a rotation of [radians] around the x axis.
+  /// Sets the upper-left 3x3 diagonal of the matrix to [scale].
+  void setDiagonal3(Vector3 scale) {
+    setDiagonal3Values(scale.x, scale.y, scale.z);
+  }
+
+  /// Sets the upper-left 3x3 diagonal of the matrix to [x], [y], and [z].
+  void setDiagonal3Values(double x, double y, double z) {
+    final storage = _storage;
+    storage[0] = x;
+    storage[5] = y;
+    storage[10] = z;
+  }
+
+  /// Sets the upper-left 3x3 of this to a rotation of [radians] around the x
+  /// axis, keeping the translation.
   void setRotationX(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     final storage = _storage;
     // dart format off
-    storage[0] = 1.0; storage[4] = 0.0; storage[8]  = 0.0; storage[12] = 0.0;
-    storage[1] = 0.0; storage[5] = c;   storage[9]  = -s;  storage[13] = 0.0;
-    storage[2] = 0.0; storage[6] = s;   storage[10] = c;   storage[14] = 0.0;
-    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0; storage[15] = 1.0;
+    storage[0] = 1.0; storage[4] = 0.0; storage[8]  = 0.0;
+    storage[1] = 0.0; storage[5] = c;   storage[9]  = -s;
+    storage[2] = 0.0; storage[6] = s;   storage[10] = c;
+    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0;
     // dart format on
   }
 
-  /// Turns the matrix into a rotation of [radians] around the y axis.
+  /// Sets the upper-left 3x3 of this to a rotation of [radians] around the y
+  /// axis, keeping the translation.
   void setRotationY(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     final storage = _storage;
     // dart format off
-    storage[0] = c;   storage[4] = 0.0; storage[8]  = s;   storage[12] = 0.0;
-    storage[1] = 0.0; storage[5] = 1.0; storage[9]  = 0.0; storage[13] = 0.0;
-    storage[2] = -s;  storage[6] = 0.0; storage[10] = c;   storage[14] = 0.0;
-    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0; storage[15] = 1.0;
+    storage[0] = c;   storage[4] = 0.0; storage[8]  = s;
+    storage[1] = 0.0; storage[5] = 1.0; storage[9]  = 0.0;
+    storage[2] = -s;  storage[6] = 0.0; storage[10] = c;
+    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0;
     // dart format on
   }
 
-  /// Turns the matrix into a rotation of [radians] around the z axis.
+  /// Sets the upper-left 3x3 of this to a rotation of [radians] around the z
+  /// axis, keeping the translation.
   void setRotationZ(double radians) {
-    final c = cos(radians);
-    final s = sin(radians);
+    final c = math.cos(radians);
+    final s = math.sin(radians);
     final storage = _storage;
     // dart format off
-    storage[0] = c;   storage[4] = -s;  storage[8]  = 0.0; storage[12] = 0.0;
-    storage[1] = s;   storage[5] = c;   storage[9]  = 0.0; storage[13] = 0.0;
-    storage[2] = 0.0; storage[6] = 0.0; storage[10] = 1.0; storage[14] = 0.0;
-    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0; storage[15] = 1.0;
+    storage[0] = c;   storage[4] = -s;  storage[8]  = 0.0;
+    storage[1] = s;   storage[5] = c;   storage[9]  = 0.0;
+    storage[2] = 0.0; storage[6] = 0.0; storage[10] = 1.0;
+    storage[3] = 0.0; storage[7] = 0.0; storage[11] = 0.0;
     // dart format on
   }
 
@@ -768,7 +869,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[10] = rotation[8];
   }
 
-  /// Transpose this.
+  /// Transposes this.
   void transpose() {
     final storage = _storage;
     var temp = storage[4];
@@ -791,6 +892,15 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[11] = temp;
   }
 
+  /// Negates this.
+  void negate() {
+    final storage = _storage;
+
+    for (var i = 0; i < 16; i += 1) {
+      storage[i] = -storage[i];
+    }
+  }
+
   /// Sets this to the component-wise absolute value of itself.
   void absolute() {
     final storage = _storage;
@@ -809,8 +919,8 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     }
   }
 
-  /// Multiplies this by a scale matrix of [scale]: `this * S`.
-  void scaleBy(Vector3 scale) {
+  /// Multiplies this by a scale matrix of [scale]. Note the order.
+  void scaleByVector3(Vector3 scale) {
     final storage = _storage;
     final sx = scale.x, sy = scale.y, sz = scale.z;
     // dart format off
@@ -821,7 +931,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     // dart format on
   }
 
-  /// Multiplies this by a translation matrix of [translation]: `this * T`.
+  /// Multiplies this by a translation matrix of [translation]. Note the order.
   void translate(Vector3 translation) {
     final storage = _storage;
     final tx = translation.x, ty = translation.y, tz = translation.z;
@@ -835,7 +945,98 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = t4;
   }
 
-  /// Add [other] to this.
+  /// Multiplies a translation matrix of [translation] by this. Note the order.
+  void leftTranslate(Vector3 translation) {
+    final storage = _storage;
+    final tx = translation.x, ty = translation.y, tz = translation.z;
+    final w0 = this[3], w1 = this[7], w2 = this[11], w3 = this[15];
+    storage[0] += tx * w0;
+    storage[1] += ty * w0;
+    storage[2] += tz * w0;
+    storage[4] += tx * w1;
+    storage[5] += ty * w1;
+    storage[6] += tz * w1;
+    storage[8] += tx * w2;
+    storage[9] += ty * w2;
+    storage[10] += tz * w2;
+    storage[12] += tx * w3;
+    storage[13] += ty * w3;
+    storage[14] += tz * w3;
+  }
+
+  /// Multiplies this by a rotation of [radians] around the x axis. Note the
+  /// order.
+  void rotateX(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+    final storage = _storage;
+    final t1 = (this[4] * c) + (this[8] * s);
+    final t2 = (this[5] * c) + (this[9] * s);
+    final t3 = (this[6] * c) + (this[10] * s);
+    final t4 = (this[7] * c) + (this[11] * s);
+    final t5 = (this[4] * -s) + (this[8] * c);
+    final t6 = (this[5] * -s) + (this[9] * c);
+    final t7 = (this[6] * -s) + (this[10] * c);
+    final t8 = (this[7] * -s) + (this[11] * c);
+    storage[4] = t1;
+    storage[5] = t2;
+    storage[6] = t3;
+    storage[7] = t4;
+    storage[8] = t5;
+    storage[9] = t6;
+    storage[10] = t7;
+    storage[11] = t8;
+  }
+
+  /// Multiplies this by a rotation of [radians] around the y axis. Note the
+  /// order.
+  void rotateY(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+    final storage = _storage;
+    final t1 = (this[0] * c) + (this[8] * -s);
+    final t2 = (this[1] * c) + (this[9] * -s);
+    final t3 = (this[2] * c) + (this[10] * -s);
+    final t4 = (this[3] * c) + (this[11] * -s);
+    final t5 = (this[0] * s) + (this[8] * c);
+    final t6 = (this[1] * s) + (this[9] * c);
+    final t7 = (this[2] * s) + (this[10] * c);
+    final t8 = (this[3] * s) + (this[11] * c);
+    storage[0] = t1;
+    storage[1] = t2;
+    storage[2] = t3;
+    storage[3] = t4;
+    storage[8] = t5;
+    storage[9] = t6;
+    storage[10] = t7;
+    storage[11] = t8;
+  }
+
+  /// Multiplies this by a rotation of [radians] around the z axis. Note the
+  /// order.
+  void rotateZ(double radians) {
+    final c = math.cos(radians);
+    final s = math.sin(radians);
+    final storage = _storage;
+    final t1 = (this[0] * c) + (this[4] * s);
+    final t2 = (this[1] * c) + (this[5] * s);
+    final t3 = (this[2] * c) + (this[6] * s);
+    final t4 = (this[3] * c) + (this[7] * s);
+    final t5 = (this[0] * -s) + (this[4] * c);
+    final t6 = (this[1] * -s) + (this[5] * c);
+    final t7 = (this[2] * -s) + (this[6] * c);
+    final t8 = (this[3] * -s) + (this[7] * c);
+    storage[0] = t1;
+    storage[1] = t2;
+    storage[2] = t3;
+    storage[3] = t4;
+    storage[4] = t5;
+    storage[5] = t6;
+    storage[6] = t7;
+    storage[7] = t8;
+  }
+
+  /// Adds [other] to this.
   void add(Matrix4 other) {
     final storage = _storage;
 
@@ -844,7 +1045,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     }
   }
 
-  /// Subtract [other] from this.
+  /// Subtracts [other] from this.
   void subtract(Matrix4 other) {
     final storage = _storage;
 
@@ -853,15 +1054,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     }
   }
 
-  /// Negate this.
-  void negate() {
-    final storage = _storage;
-    for (var i = 0; i < 16; i += 1) {
-      storage[i] = -storage[i];
-    }
-  }
-
-  /// Multiply this by [arg]: `this * arg`.
+  /// Multiplies this by [arg]. Note the order.
   void multiply(Matrix4 arg) {
     final storage = _storage;
     final m00 = this[0], m01 = this[4], m02 = this[8], m03 = this[12];
@@ -890,7 +1083,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = (m30 * n03) + (m31 * n13) + (m32 * n23) + (m33 * n33);
   }
 
-  /// Premultiplies this by [arg]: `arg * this`.
+  /// Premultiplies this by [arg]. Note the order.
   void premultiply(Matrix4 arg) {
     final storage = _storage;
     final m00 = arg[0], m01 = arg[4], m02 = arg[8], m03 = arg[12];
@@ -919,7 +1112,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = (m30 * n03) + (m31 * n13) + (m32 * n23) + (m33 * n33);
   }
 
-  /// Transpose this, then multiply by [arg].
+  /// Transposes this, then multiplies by [arg]. Note the order.
   void transposeMultiply(Matrix4 arg) {
     final storage = _storage;
     final m00 = this[0], m01 = this[1], m02 = this[2], m03 = this[3];
@@ -948,7 +1141,7 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = (m30 * n03) + (m31 * n13) + (m32 * n23) + (m33 * n33);
   }
 
-  /// Multiply this by [arg] transposed.
+  /// Multiplies this by [arg] transposed. Note the order.
   void multiplyTranspose(Matrix4 arg) {
     final storage = _storage;
     final m00 = this[0], m01 = this[4], m02 = this[8], m03 = this[12];
@@ -1014,17 +1207,19 @@ class MMatrix4 with _Matrix4 implements Matrix4 {
     storage[15] = (a20 * b03 - a21 * b01 + a22 * b00) * scale;
   }
 
-  /// Set this matrix to be the inverse of [arg]. Returns the determinant.
+  /// Sets this matrix to be the inverse of [arg]. Returns the determinant.
   double copyInverse(Matrix4 arg) {
     final det = arg.determinant();
     setFrom(arg);
 
-    if (det == 0.0) return 0.0;
+    if (det == 0.0) {
+      return 0.0;
+    }
 
     scaleAdjoint(1.0 / det);
     return det;
   }
 
-  /// Invert the matrix. Returns the determinant.
+  /// Inverts the matrix. Returns the determinant.
   double invert() => copyInverse(this);
 }

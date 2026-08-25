@@ -1,8 +1,9 @@
 ## 0.2.0
 
+- Implement `Vector3` and `MVector3`.
 - Implement `Matrix4` and `MMatrix4`.
 - Implement `Quad` and `MQuad`.
-- Remove `transform` from `Matrix3`. You can still do them directly on `Vector2`. Future matrix types will follow the same convention.
+- Fix various inconsistencies in style, API, and `vector_math` adaptations.
 
 ## 0.1.1
 

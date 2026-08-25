@@ -6,7 +6,7 @@ Each type in `ivector_math` is immutable by default, but an additional mutable i
 
 Since the mutable type always implements the immutable type, you may use the prefix-free version throughout your code by default. When mutation is required, that requirement will now be documented explicitly through a type signature.
 
-The library stays as close as practical to the original `vector_math` API, with a small number of additions and adjustments to support the immutable/mutable split.
+The library stays as close as practical to the original `vector_math` API. The immutable/mutable split forces a number of adjustments. A handful of conveniences are also introduced, notably component-wise clamping, per-axis helpers, and canonical `zero`/`infinity` constants.
 
 ## Example
 

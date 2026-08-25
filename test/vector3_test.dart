@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:ivector_math/ivector_math.dart';
 import 'package:test/test.dart';
@@ -34,7 +34,7 @@ void main() {
       expectVector3(Vector3(1.5, -2.5, 3.5), 1.5, -2.5, 3.5);
     });
 
-    test('is const-constructible', () {
+    test('supports a const primary constructor', () {
       const vector = Vector3(1.5, -2.5, 3.5);
       const zero = Vector3.zero;
 
@@ -114,14 +114,22 @@ void main() {
       expect(second.distance2(first), 49);
     });
 
+    test('computes absolute and relative error against a correct vector', () {
+      final correct = Vector3(2, 3, 6);
+      final approximate = Vector3(2, 3, 13);
+
+      expect(approximate.absoluteError(correct), 7);
+      expect(approximate.relativeError(correct), closeTo(1, 0.0000001));
+    });
+
     test('computes the unsigned angle between vectors', () {
       final right = Vector3(1, 0, 0);
       final up = Vector3(0, 1, 0);
       final left = Vector3(-1, 0, 0);
 
       expect(right.angleTo(right), 0);
-      expect(right.angleTo(up), closeTo(pi / 2, 0.0000001));
-      expect(right.angleTo(left), closeTo(pi, 0.0000001));
+      expect(right.angleTo(up), closeTo(math.pi / 2, 0.0000001));
+      expect(right.angleTo(left), closeTo(math.pi, 0.0000001));
     });
 
     test('computes the signed angle between vectors around a normal', () {
@@ -130,9 +138,9 @@ void main() {
       final axis = Vector3(0, 0, 1);
 
       expect(right.angleToSigned(right, axis), 0);
-      expect(right.angleToSigned(up, axis), closeTo(pi / 2, 0.0000001));
-      expect(up.angleToSigned(right, axis), closeTo(-pi / 2, 0.0000001));
-      expect(right.angleToSigned(up, -axis), closeTo(-pi / 2, 0.0000001));
+      expect(right.angleToSigned(up, axis), closeTo(math.pi / 2, 0.0000001));
+      expect(up.angleToSigned(right, axis), closeTo(-math.pi / 2, 0.0000001));
+      expect(right.angleToSigned(up, -axis), closeTo(-math.pi / 2, 0.0000001));
     });
 
     test('creates a normalized copy', () {
@@ -194,6 +202,15 @@ void main() {
       final multiplied = vector.multiplied(other);
 
       expectVector3(multiplied, 10, 18, 28);
+    });
+
+    test('creates a component-wise divided copy', () {
+      final vector = Vector3(8, 15, 24);
+      final other = Vector3(4, 5, 6);
+
+      final divided = vector.divided(other);
+
+      expectVector3(divided, 2, 3, 4);
     });
 
     test('creates a reflected copy', () {
@@ -339,6 +356,15 @@ void main() {
       expectVector3(maximum, 3, 5, 4);
     });
 
+    test('interpolates between two vectors', () {
+      final a = Vector3(0, 10, 20);
+      final b = Vector3(10, 20, 30);
+
+      expectVector3(Vector3.mix(a, b, 0.25), 2.5, 12.5, 22.5);
+      expectVector3(Vector3.mix(a, b, 0), 0, 10, 20);
+      expectVector3(Vector3.mix(a, b, 1), 10, 20, 30);
+    });
+
     test('creates a premultiplied copy', () {
       final matrix = Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
       final vector = Vector3(1, 1, 1);
@@ -349,7 +375,7 @@ void main() {
     });
 
     test('creates a premultiplied copy rotated by a rotation matrix', () {
-      final matrix = Matrix3.rotationZ(pi / 2);
+      final matrix = Matrix3.rotationZ(math.pi / 2);
       final vector = Vector3(1, 0, 0);
 
       final premultiplied = vector.premultiplied(matrix);
@@ -379,6 +405,7 @@ void main() {
       );
 
       final point = Vector3(1, 1, 1);
+
       final transformed = point.transformed(matrix);
 
       expectVector3(transformed, 12, 23, 34);
@@ -395,6 +422,7 @@ void main() {
       );
 
       final vector = Vector3(1, 2, 3);
+
       final rotated = vector.rotated(matrix);
 
       expectVector3(rotated, 38, 44, 50);
@@ -501,6 +529,16 @@ void main() {
       expectVector3(vector, 1, 2, 3);
     });
 
+    test('reads through without changing the source', () {
+      final vector = MVector3(2, 3, 6);
+
+      expect(vector.length, 7);
+      expect(vector.dot(Vector3(1, 1, 1)), 11);
+      expectVector3(vector.scaled(2), 4, 6, 12);
+      expectVector3(-vector, -2, -3, -6);
+      expectVector3(vector, 2, 3, 6);
+    });
+
     test('sets all components from another vector', () {
       final vector = MVector3.zero();
 
@@ -515,6 +553,14 @@ void main() {
       vector.setValues(1, 2, 3);
 
       expectVector3(vector, 1, 2, 3);
+    });
+
+    test('zeros all components in place', () {
+      final vector = MVector3(1, 2, 3);
+
+      vector.setZero();
+
+      expectVector3(vector, 0, 0, 0);
     });
 
     test('splats one value across all components', () {
@@ -719,6 +765,14 @@ void main() {
       expectVector3(vector, 10, 18, 28);
     });
 
+    test('divides by a vector in place', () {
+      final vector = MVector3(8, 15, 24);
+
+      vector.divide(Vector3(4, 5, 6));
+
+      expectVector3(vector, 2, 3, 4);
+    });
+
     test('sets to the component-wise maximum in place', () {
       final vector = MVector3(2, 5, 3);
 
@@ -733,6 +787,14 @@ void main() {
       vector.min(Vector3(4, 3, 4));
 
       expectVector3(vector, 2, 3, 3);
+    });
+
+    test('interpolates towards a vector in place', () {
+      final vector = MVector3(0, 10, 20);
+
+      vector.mix(Vector3(10, 20, 30), 0.25);
+
+      expectVector3(vector, 2.5, 12.5, 22.5);
     });
 
     test('adds a scaled vector in place', () {
@@ -781,6 +843,7 @@ void main() {
       );
 
       final point = MVector3(1, 1, 1);
+
       point.transform(matrix);
 
       expectVector3(point, 12, 23, 34);
@@ -797,6 +860,7 @@ void main() {
       );
 
       final vector = MVector3(1, 2, 3);
+
       vector.rotate(matrix);
 
       expectVector3(vector, 38, 44, 50);

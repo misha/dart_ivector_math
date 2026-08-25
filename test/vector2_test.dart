@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:ivector_math/ivector_math.dart';
 import 'package:test/test.dart';
@@ -28,7 +28,7 @@ void main() {
       expectVector2(Vector2(1.5, -2.5), 1.5, -2.5);
     });
 
-    test('is const-constructible', () {
+    test('supports a const primary constructor', () {
       const vector = Vector2(1.5, -2.5);
       const zero = Vector2.zero;
 
@@ -106,14 +106,22 @@ void main() {
       expect(second.distance2(first), 25);
     });
 
+    test('computes absolute and relative error against a correct vector', () {
+      final correct = Vector2(3, 4);
+      final approximate = Vector2(3, 5);
+
+      expect(approximate.absoluteError(correct), 1);
+      expect(approximate.relativeError(correct), closeTo(0.2, 0.0000001));
+    });
+
     test('computes the unsigned angle between vectors', () {
       final right = Vector2(1, 0);
       final up = Vector2(0, 1);
       final left = Vector2(-1, 0);
 
       expect(right.angleTo(right), 0);
-      expect(right.angleTo(up), closeTo(pi / 2, 0.0000001));
-      expect(right.angleTo(left), closeTo(pi, 0.0000001));
+      expect(right.angleTo(up), closeTo(math.pi / 2, 0.0000001));
+      expect(right.angleTo(left), closeTo(math.pi, 0.0000001));
     });
 
     test('computes the signed angle between vectors', () {
@@ -121,8 +129,8 @@ void main() {
       final up = Vector2(0, 1);
 
       expect(right.angleToSigned(right), 0);
-      expect(right.angleToSigned(up), closeTo(pi / 2, 0.0000001));
-      expect(up.angleToSigned(right), closeTo(-pi / 2, 0.0000001));
+      expect(right.angleToSigned(up), closeTo(math.pi / 2, 0.0000001));
+      expect(up.angleToSigned(right), closeTo(-math.pi / 2, 0.0000001));
     });
 
     test('creates a normalized copy', () {
@@ -176,6 +184,15 @@ void main() {
       final multiplied = vector.multiplied(other);
 
       expectVector2(multiplied, 8, 15);
+    });
+
+    test('creates a component-wise divided copy', () {
+      final vector = Vector2(8, 15);
+      final other = Vector2(4, 5);
+
+      final divided = vector.divided(other);
+
+      expectVector2(divided, 2, 3);
     });
 
     test('creates a reflected copy', () {
@@ -300,6 +317,15 @@ void main() {
       expectVector2(maximum, 3, 5);
     });
 
+    test('interpolates between two vectors', () {
+      final a = Vector2(0, 10);
+      final b = Vector2(10, 20);
+
+      expectVector2(Vector2.mix(a, b, 0.25), 2.5, 12.5);
+      expectVector2(Vector2.mix(a, b, 0), 0, 10);
+      expectVector2(Vector2.mix(a, b, 1), 10, 20);
+    });
+
     test('creates a transformed copy', () {
       final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
       final point = Vector2(1, 1);
@@ -307,6 +333,24 @@ void main() {
       final transformed = point.transformed(matrix);
 
       expectVector2(transformed, 12, 23);
+    });
+
+    test('creates a rotated copy ignoring translation', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final vector = Vector2(1, 1);
+
+      final rotated = vector.rotated(matrix);
+
+      expectVector2(rotated, 2, 3);
+    });
+
+    test('creates a copy rotated by the absolute rotation of a matrix', () {
+      final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
+      final vector = Vector2(2, 3);
+
+      final rotated = vector.absoluteRotated(matrix);
+
+      expectVector2(rotated, 3, 2);
     });
 
     test('negates', () {
@@ -408,12 +452,38 @@ void main() {
       expectVector2(vector, 1, 2);
     });
 
+    test('reads through without changing the source', () {
+      final vector = MVector2(3, 4);
+
+      expect(vector.length, 5);
+      expect(vector.dot(Vector2(1, 1)), 7);
+      expectVector2(vector.scaled(2), 6, 8);
+      expectVector2(-vector, -3, -4);
+      expectVector2(vector, 3, 4);
+    });
+
     test('sets both components from another vector', () {
       final vector = MVector2.zero();
 
       vector.setFrom(Vector2(1, 2));
 
       expectVector2(vector, 1, 2);
+    });
+
+    test('sets both components from values', () {
+      final vector = MVector2.zero();
+
+      vector.setValues(1, 2);
+
+      expectVector2(vector, 1, 2);
+    });
+
+    test('zeros both components in place', () {
+      final vector = MVector2(1, 2);
+
+      vector.setZero();
+
+      expectVector2(vector, 0, 0);
     });
 
     test('splats one value across both components', () {
@@ -599,6 +669,14 @@ void main() {
       expectVector2(vector, 8, 15);
     });
 
+    test('divides by a vector in place', () {
+      final vector = MVector2(8, 15);
+
+      vector.divide(Vector2(4, 5));
+
+      expectVector2(vector, 2, 3);
+    });
+
     test('sets to the component-wise maximum in place', () {
       final vector = MVector2(2, 5);
 
@@ -613,6 +691,14 @@ void main() {
       vector.min(Vector2(4, 3));
 
       expectVector2(vector, 2, 3);
+    });
+
+    test('interpolates towards a vector in place', () {
+      final vector = MVector2(0, 10);
+
+      vector.mix(Vector2(10, 20), 0.25);
+
+      expectVector2(vector, 2.5, 12.5);
     });
 
     test('adds a scaled vector in place', () {
@@ -641,11 +727,20 @@ void main() {
       expectVector2(point, 12, 23);
     });
 
+    test('rotates in place ignoring translation', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final vector = MVector2(1, 1);
+
+      vector.rotate(matrix);
+
+      expectVector2(vector, 2, 3);
+    });
+
     test('rotates a point in place by the absolute rotation of a matrix', () {
       final matrix = Matrix3(0, 1, 0, -1, 0, 0, 5, 6, 1);
       final point = MVector2(2, 3);
 
-      point.absoluteRotate2(matrix);
+      point.absoluteRotate(matrix);
 
       expectVector2(point, 3, 2);
     });

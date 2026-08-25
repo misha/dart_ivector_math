@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:ivector_math/ivector_math.dart';
 import 'package:test/test.dart';
 
@@ -78,6 +80,12 @@ void main() {
       expect(aabb.height, 2);
     });
 
+    test('reads the half extents', () {
+      final aabb = Aabb2(.all(0), .new(4, 2));
+
+      expectVector2(aabb.halfExtents, 2, 1);
+    });
+
     test('reads a positive width and height when min and max are inverted', () {
       final aabb = Aabb2(.new(4, 2), .all(0));
 
@@ -128,6 +136,38 @@ void main() {
 
       expect(aabb.intersectsWithVector2(.all(2)), isTrue);
       expect(aabb.intersectsWithVector2(.all(3)), isFalse);
+    });
+
+    test('creates a transformed copy', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final aabb = Aabb2(.all(0), .all(2));
+
+      final transformed = aabb.transformed(matrix);
+
+      expectAabb2(transformed, 10, 20, 14, 26);
+      expectAabb2(aabb, 0, 0, 2, 2);
+    });
+
+    test('creates a rotated copy', () {
+      final matrix = Matrix3.rotationZ(math.pi / 4);
+      final aabb = Aabb2(.all(0), .all(2));
+
+      final rotated = aabb.rotated(matrix);
+
+      expect(rotated.min.x, closeTo(1 - math.sqrt2, 0.0000001));
+      expect(rotated.min.y, closeTo(1 - math.sqrt2, 0.0000001));
+      expect(rotated.max.x, closeTo(1 + math.sqrt2, 0.0000001));
+      expect(rotated.max.y, closeTo(1 + math.sqrt2, 0.0000001));
+      expectAabb2(aabb, 0, 0, 2, 2);
+    });
+
+    test('creates a translated copy', () {
+      final aabb = Aabb2(.all(0), .all(2));
+
+      final translated = aabb.translated(.new(1, 2));
+
+      expectAabb2(translated, 1, 2, 3, 4);
+      expectAabb2(aabb, 0, 0, 2, 2);
     });
 
     test('compares and hashes by component values across both forms', () {
@@ -211,9 +251,11 @@ void main() {
     test('chains mutations via cascades', () {
       final aabb = MAabb2.zero();
 
-      aabb.setValues(1, 2, 3, 4);
+      aabb
+        ..setValues(1, 2, 3, 4)
+        ..hullPoint(.new(5, -1));
 
-      expectAabb2(aabb, 1, 2, 3, 4);
+      expectAabb2(aabb, 1, -1, 5, 4);
     });
 
     test('sets both corners from another AABB without sharing storage', () {
@@ -257,6 +299,35 @@ void main() {
       aabb.hullPoint(.new(5, -1));
 
       expectAabb2(aabb, 0, -1, 5, 2);
+    });
+
+    test('transforms in place', () {
+      final matrix = Matrix3(2, 0, 0, 0, 3, 0, 10, 20, 1);
+      final aabb = MAabb2(.all(0), .all(2));
+
+      aabb.transform(matrix);
+
+      expectAabb2(aabb, 10, 20, 14, 26);
+    });
+
+    test('rotates in place', () {
+      final matrix = Matrix3.rotationZ(math.pi / 4);
+      final aabb = MAabb2(.all(0), .all(2));
+
+      aabb.rotate(matrix);
+
+      expect(aabb.min.x, closeTo(1 - math.sqrt2, 0.0000001));
+      expect(aabb.min.y, closeTo(1 - math.sqrt2, 0.0000001));
+      expect(aabb.max.x, closeTo(1 + math.sqrt2, 0.0000001));
+      expect(aabb.max.y, closeTo(1 + math.sqrt2, 0.0000001));
+    });
+
+    test('translates in place', () {
+      final aabb = MAabb2(.all(0), .all(2));
+
+      aabb.translate(.new(1, 2));
+
+      expectAabb2(aabb, 1, 2, 3, 4);
     });
   });
 }

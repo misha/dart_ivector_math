@@ -1,10 +1,13 @@
-import 'dart:math';
 import 'dart:math' as math;
 
 import 'matrix3.dart';
 
+/// Shared operations for [Vector2] and [MVector2].
 mixin _Vector2 {
+  /// The x component.
   double get x;
+
+  /// The y component.
   double get y;
 
   /// Access the component of the vector at the index [index].
@@ -31,13 +34,13 @@ mixin _Vector2 {
   bool get isNaN => x.isNaN || y.isNaN;
 
   /// The length of the vector.
-  double get length => sqrt(length2);
+  double get length => math.sqrt(length2);
 
   /// The squared length of the vector.
   double get length2 => x * x + y * y;
 
   /// Distance from this to [other].
-  double distance(Vector2 other) => sqrt(distance2(other));
+  double distance(Vector2 other) => math.sqrt(distance2(other));
 
   /// Squared distance from this to [other].
   double distance2(Vector2 other) {
@@ -46,22 +49,35 @@ mixin _Vector2 {
     return dx * dx + dy * dy;
   }
 
-  /// Returns the angle between this vector and [other] in radians.
+  /// Returns the absolute error between this and [correct].
+  double absoluteError(Vector2 correct) => distance(correct);
+
+  /// Returns the relative error between this and [correct].
+  double relativeError(Vector2 correct) =>
+      absoluteError(correct) / correct.length;
+
+  /// Returns the angle between this and [other] in radians.
   double angleTo(Vector2 other) {
-    if (this == other) return 0;
+    if (this == other) {
+      return 0;
+    }
+
     final cosine = dot(other) / (length * other.length);
-    return acos(cosine.clamp(-1.0, 1.0));
+    return math.acos(cosine.clamp(-1.0, 1.0));
   }
 
   /// Returns the signed angle between this and [other] in radians.
   double angleToSigned(Vector2 other) {
-    if (this == other) return 0;
+    if (this == other) {
+      return 0;
+    }
+
     final sine = cross(other);
     final cosine = dot(other);
-    return atan2(sine, cosine);
+    return math.atan2(sine, cosine);
   }
 
-  /// Negate.
+  /// Negated copy of this.
   Vector2 operator -() => .new(-x, -y);
 
   /// Add two vectors.
@@ -70,10 +86,10 @@ mixin _Vector2 {
   /// Subtract two vectors.
   Vector2 operator -(Vector2 other) => .new(x - other.x, y - other.y);
 
-  /// Scale.
+  /// Scaled copy of this.
   Vector2 operator *(double value) => scaled(value);
 
-  /// Scale.
+  /// Copy of this scaled by the inverse of [value].
   Vector2 operator /(double value) => scaled(1.0 / value);
 
   /// Inner product.
@@ -97,16 +113,21 @@ mixin _Vector2 {
     y < 0 ? y.ceilToDouble() : y.floorToDouble(),
   );
 
-  /// Return a copy of this scaled by [value].
+  /// Scaled copy of this.
   Vector2 scaled(double value) => .new(x * value, y * value);
 
   /// Copy of this multiplied by [other].
   Vector2 multiplied(Vector2 other) => .new(x * other.x, y * other.y);
 
+  /// Copy of this divided by [other].
+  Vector2 divided(Vector2 other) => .new(x / other.x, y / other.y);
+
   /// Normalized copy of this.
   Vector2 normalized() {
     final length = this.length;
-    if (length == 0) return .new(x, y);
+    if (length == 0) {
+      return .new(x, y);
+    }
 
     final scale = 1 / length;
     return .new(x * scale, y * scale);
@@ -160,6 +181,21 @@ mixin _Vector2 {
     (matrix[1] * x) + (matrix[4] * y) + matrix[7],
   );
 
+  /// Rotates this by the upper-left 2x2 of [matrix], ignoring translation, and
+  /// returns the result.
+  Vector2 rotated(Matrix3 matrix) => .new(
+    (matrix[0] * x) + (matrix[3] * y), //
+    (matrix[1] * x) + (matrix[4] * y),
+  );
+
+  /// Rotates this by the absolute rotation of the upper-left 2x2 of [matrix],
+  /// ignoring translation, and returns the result. Primarily used by AABB
+  /// transformation code.
+  Vector2 absoluteRotated(Matrix3 matrix) => .new(
+    (matrix[0].abs() * x) + (matrix[3].abs() * y),
+    (matrix[1].abs() * x) + (matrix[4].abs() * y),
+  );
+
   /// Returns a printable string.
   @override
   String toString() => '($x, $y)';
@@ -182,16 +218,16 @@ class Vector2 with _Vector2 {
   @override
   final double y;
 
-  /// Construct a new vector with the specified values.
+  /// Create a new vector with the given values.
   const Vector2(this.x, this.y);
 
-  /// Splat [value] into all lanes of the vector.
+  /// Create a new vector with all components set to [value].
   const Vector2.all(double value) : x = value, y = value;
 
-  /// Casts [x] and [y] to doubles.
+  /// Create a new vector from [x] and [y], cast to doubles.
   factory Vector2.cast(num x, num y) => .new(x.toDouble(), y.toDouble());
 
-  /// Copy of [other].
+  /// Create a new vector as a copy of [other].
   factory Vector2.copy(Vector2 other) => .new(other.x, other.y);
 
   /// Canonical zero vector.
@@ -208,6 +244,10 @@ class Vector2 with _Vector2 {
   static Vector2 max(Vector2 a, Vector2 b) =>
       .new(math.max(a.x, b.x), math.max(a.y, b.y));
 
+  /// Linear interpolation from [a] to [b] by [amount].
+  static Vector2 mix(Vector2 a, Vector2 b, double amount) =>
+      .new(a.x + amount * (b.x - a.x), a.y + amount * (b.y - a.y));
+
   /// Clone of this.
   Vector2 clone() => .copy(this);
 }
@@ -219,26 +259,26 @@ class MVector2 with _Vector2 implements Vector2 {
   @override
   double y;
 
-  /// Construct a new vector with the specified values.
+  /// Create a new vector with the given values.
   MVector2(this.x, this.y);
 
-  /// Zero vector.
+  /// Create a new vector with all components set to zero.
   MVector2.zero() : x = 0, y = 0;
 
-  /// Splat [value] into all lanes of the vector.
+  /// Create a new vector with all components set to [value].
   MVector2.all(double value) : x = value, y = value;
 
-  /// Casts [x] and [y] to doubles.
+  /// Create a new vector from [x] and [y], cast to doubles.
   factory MVector2.cast(num x, num y) => .new(x.toDouble(), y.toDouble());
 
-  /// Copy of [other].
+  /// Create a new vector as a copy of [other].
   factory MVector2.copy(Vector2 other) => .new(other.x, other.y);
 
   /// Clone of this.
   @override
   MVector2 clone() => .copy(this);
 
-  /// Set the component of the vector at the index [index].
+  /// Sets the component of the vector at the index [index].
   void operator []=(int index, double value) {
     switch (index) {
       case 0:
@@ -252,106 +292,126 @@ class MVector2 with _Vector2 implements Vector2 {
     }
   }
 
-  /// Set the values by copying them from [other].
+  /// Sets the values of this by copying them from [other].
   void setFrom(Vector2 other) {
     x = other.x;
     y = other.y;
   }
 
-  /// Set the values of the vector.
+  /// Sets the values of this.
   void setValues(double x, double y) {
     this.x = x;
     this.y = y;
   }
 
-  /// Splat [value] into all lanes of the vector.
+  /// Sets all components of this to zero.
+  void setZero() {
+    x = 0;
+    y = 0;
+  }
+
+  /// Sets all components of this to [value].
   void splat(double value) {
     x = value;
     y = value;
   }
 
-  /// Negate.
+  /// Negates this.
   void negate() {
     x = -x;
     y = -y;
   }
 
-  /// Absolute value.
+  /// Sets this to the component-wise absolute value of itself.
   void absolute() {
     x = x.abs();
     y = y.abs();
   }
 
-  /// Floor entries in this.
+  /// Floors each component of this.
   void floor() {
     x = x.floorToDouble();
     y = y.floorToDouble();
   }
 
-  /// Ceil entries in this.
+  /// Ceils each component of this.
   void ceil() {
     x = x.ceilToDouble();
     y = y.ceilToDouble();
   }
 
-  /// Round entries in this.
+  /// Rounds each component of this.
   void round() {
     x = x.roundToDouble();
     y = y.roundToDouble();
   }
 
-  /// Round entries in this towards zero.
+  /// Rounds each component of this towards zero.
   void roundToZero() {
     x = x < 0 ? x.ceilToDouble() : x.floorToDouble();
     y = y < 0 ? y.ceilToDouble() : y.floorToDouble();
   }
 
-  /// Add [other] to this.
+  /// Adds [other] to this.
   void add(Vector2 other) {
     x += other.x;
     y += other.y;
   }
 
-  /// Subtract [other] from this.
+  /// Subtracts [other] from this.
   void subtract(Vector2 other) {
     x -= other.x;
     y -= other.y;
   }
 
-  /// Scale this by [value].
+  /// Scales this by [value].
   void scale(double value) {
     x *= value;
     y *= value;
   }
 
-  /// Multiply entries in this with entries in [other].
+  /// Multiplies each component of this by the matching component of [other].
   void multiply(Vector2 other) {
     x *= other.x;
     y *= other.y;
   }
 
-  /// Set this to the component-wise maximum of this and [other].
+  /// Divides each component of this by the matching component of [other].
+  void divide(Vector2 other) {
+    x /= other.x;
+    y /= other.y;
+  }
+
+  /// Sets this to the component-wise maximum of this and [other].
   void max(Vector2 other) {
     x = math.max(x, other.x);
     y = math.max(y, other.y);
   }
 
-  /// Set this to the component-wise minimum of this and [other].
+  /// Sets this to the component-wise minimum of this and [other].
   void min(Vector2 other) {
     x = math.min(x, other.x);
     y = math.min(y, other.y);
   }
 
-  /// Add [other] scaled by [value] to this.
+  /// Sets this to the linear interpolation from this to [other] by [amount].
+  void mix(Vector2 other, double amount) {
+    x += amount * (other.x - x);
+    y += amount * (other.y - y);
+  }
+
+  /// Adds [other] scaled by [value] to this.
   void addScaled(Vector2 other, double value) {
     x += other.x * value;
     y += other.y * value;
   }
 
-  /// Normalize this. Returns the length of the vector before normalization.
+  /// Normalizes this. Returns the length of the vector before normalization.
   double normalize() {
     final length = this.length;
-    if (length == 0) return 0;
+    if (length == 0) {
+      return 0;
+    }
 
     final scale = 1 / length;
     x *= scale;
@@ -359,71 +419,74 @@ class MVector2 with _Vector2 implements Vector2 {
     return length;
   }
 
-  /// Reflect this.
+  /// Reflects this.
   void reflect(Vector2 normal) {
     final dotProduct = normal.dot(this) * 2;
     x -= normal.x * dotProduct;
     y -= normal.y * dotProduct;
   }
 
-  /// Clamp each component of this between [range.x] and [range.y].
+  /// Clamps each component of this between [range.x] and [range.y].
   void clamp(Vector2 range) {
     x = x.clamp(range.x, range.y).toDouble();
     y = y.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp the x component of this between [range.x] and [range.y].
+  /// Clamps the x component of this between [range.x] and [range.y].
   void clampX(Vector2 range) {
     x = x.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp the y component of this between [range.x] and [range.y].
+  /// Clamps the y component of this between [range.x] and [range.y].
   void clampY(Vector2 range) {
     y = y.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp each component of this between [min] and [max].
+  /// Clamps each component of this between [min] and [max].
   void clampTo(double min, double max) {
     x = x.clamp(min, max).toDouble();
     y = y.clamp(min, max).toDouble();
   }
 
-  /// Clamp the x component of this between [min] and [max].
+  /// Clamps the x component of this between [min] and [max].
   void clampToX(double min, double max) {
     x = x.clamp(min, max).toDouble();
   }
 
-  /// Clamp the y component of this between [min] and [max].
+  /// Clamps the y component of this between [min] and [max].
   void clampToY(double min, double max) {
     y = y.clamp(min, max).toDouble();
   }
 
-  /// Clamp each component of this between the matching components of [min] and
-  /// [max].
+  /// Clamps each component of this between the matching components of [min]
+  /// and [max].
   void clampBetween(Vector2 min, Vector2 max) {
     x = x.clamp(min.x, max.x).toDouble();
     y = y.clamp(min.y, max.y).toDouble();
   }
 
-  /// Transforms this by [matrix] in place.
+  /// Transforms this by [matrix].
   void transform(Matrix3 matrix) {
-    final oldX = x;
-    final oldY = y;
-    x = (matrix[0] * oldX) + (matrix[3] * oldY) + matrix[6];
-    y = (matrix[1] * oldX) + (matrix[4] * oldY) + matrix[7];
+    final x = this.x;
+    final y = this.y;
+    this.x = (matrix[0] * x) + (matrix[3] * y) + matrix[6];
+    this.y = (matrix[1] * x) + (matrix[4] * y) + matrix[7];
   }
 
-  /// Rotates this by the absolute rotation of the top-left 2x2 of [matrix],
-  /// ignoring translation, in place. Primarily used by AABB transformation
-  /// code.
-  void absoluteRotate2(Matrix3 matrix) {
-    final m00 = matrix[0].abs();
-    final m01 = matrix[3].abs();
-    final m10 = matrix[1].abs();
-    final m11 = matrix[4].abs();
-    final oldX = x;
-    final oldY = y;
-    x = (oldX * m00) + (oldY * m01);
-    y = (oldX * m10) + (oldY * m11);
+  /// Rotates this by the upper-left 2x2 of [matrix], ignoring translation.
+  void rotate(Matrix3 matrix) {
+    final x = this.x;
+    final y = this.y;
+    this.x = (matrix[0] * x) + (matrix[3] * y);
+    this.y = (matrix[1] * x) + (matrix[4] * y);
+  }
+
+  /// Rotates this by the absolute rotation of the upper-left 2x2 of [matrix],
+  /// ignoring translation. Primarily used by AABB transformation code.
+  void absoluteRotate(Matrix3 matrix) {
+    final x = this.x;
+    final y = this.y;
+    this.x = (matrix[0].abs() * x) + (matrix[3].abs() * y);
+    this.y = (matrix[1].abs() * x) + (matrix[4].abs() * y);
   }
 }

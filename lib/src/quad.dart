@@ -20,7 +20,7 @@ mixin _Quad {
 
   /// Copy of this with each point transformed by [matrix].
   Quad transformed(Matrix4 matrix) => .new(
-    point0.transformed(matrix),
+    point0.transformed(matrix), //
     point1.transformed(matrix),
     point2.transformed(matrix),
     point3.transformed(matrix),
@@ -131,7 +131,7 @@ class MQuad with _Quad implements Quad {
   @override
   MQuad clone() => .copy(this);
 
-  /// Copy the points from [other] into this.
+  /// Sets the points of this by copying them from [other].
   void setFrom(Quad other) {
     point0.setFrom(other.point0);
     point1.setFrom(other.point1);
@@ -139,7 +139,21 @@ class MQuad with _Quad implements Quad {
     point3.setFrom(other.point3);
   }
 
-  /// Transform each point of this by [matrix] in place.
+  /// Sets the points of this by copying [point0], [point1], [point2], and
+  /// [point3].
+  void setPoints(
+    Vector3 point0,
+    Vector3 point1,
+    Vector3 point2,
+    Vector3 point3,
+  ) {
+    this.point0.setFrom(point0);
+    this.point1.setFrom(point1);
+    this.point2.setFrom(point2);
+    this.point3.setFrom(point3);
+  }
+
+  /// Transforms each point of this by [matrix].
   void transform(Matrix4 matrix) {
     point0.transform(matrix);
     point1.transform(matrix);
@@ -147,7 +161,7 @@ class MQuad with _Quad implements Quad {
     point3.transform(matrix);
   }
 
-  /// Translate each point of this by [offset] in place.
+  /// Translates each point of this by [offset].
   void translate(Vector3 offset) {
     point0.add(offset);
     point1.add(offset);

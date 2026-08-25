@@ -4,9 +4,15 @@ import 'matrix3.dart';
 import 'matrix4.dart';
 import 'vector2.dart';
 
+/// Shared operations for [Vector3] and [MVector3].
 mixin _Vector3 {
+  /// The x component.
   double get x;
+
+  /// The y component.
   double get y;
+
+  /// The z component.
   double get z;
 
   /// Access the component of the vector at the index [index].
@@ -52,9 +58,19 @@ mixin _Vector3 {
     return dx * dx + dy * dy + dz * dz;
   }
 
-  /// Returns the angle between this vector and [other] in radians.
+  /// Returns the absolute error between this and [correct].
+  double absoluteError(Vector3 correct) => distance(correct);
+
+  /// Returns the relative error between this and [correct].
+  double relativeError(Vector3 correct) =>
+      absoluteError(correct) / correct.length;
+
+  /// Returns the angle between this and [other] in radians.
   double angleTo(Vector3 other) {
-    if (this == other) return 0;
+    if (this == other) {
+      return 0;
+    }
+
     final cosine = dot(other) / (length * other.length);
     return math.acos(cosine.clamp(-1.0, 1.0));
   }
@@ -67,7 +83,7 @@ mixin _Vector3 {
     return sign < 0 ? -angle : angle;
   }
 
-  /// Negate.
+  /// Negated copy of this.
   Vector3 operator -() => .new(-x, -y, -z);
 
   /// Add two vectors.
@@ -78,10 +94,10 @@ mixin _Vector3 {
   Vector3 operator -(Vector3 other) =>
       .new(x - other.x, y - other.y, z - other.z);
 
-  /// Scale.
+  /// Scaled copy of this.
   Vector3 operator *(double value) => scaled(value);
 
-  /// Scale.
+  /// Copy of this scaled by the inverse of [value].
   Vector3 operator /(double value) => scaled(1.0 / value);
 
   /// Inner product.
@@ -113,17 +129,22 @@ mixin _Vector3 {
     z < 0 ? z.ceilToDouble() : z.floorToDouble(),
   );
 
-  /// Return a copy of this scaled by [value].
+  /// Scaled copy of this.
   Vector3 scaled(double value) => .new(x * value, y * value, z * value);
 
   /// Copy of this multiplied by [other].
   Vector3 multiplied(Vector3 other) =>
       .new(x * other.x, y * other.y, z * other.z);
 
+  /// Copy of this divided by [other].
+  Vector3 divided(Vector3 other) => .new(x / other.x, y / other.y, z / other.z);
+
   /// Normalized copy of this.
   Vector3 normalized() {
     final length = this.length;
-    if (length == 0) return .new(x, y, z);
+    if (length == 0) {
+      return .new(x, y, z);
+    }
 
     final scale = 1 / length;
     return .new(x * scale, y * scale, z * scale);
@@ -184,7 +205,7 @@ mixin _Vector3 {
   /// Copy of this with each component clamped between the matching components
   /// of [min] and [max].
   Vector3 clampedBetween(Vector3 min, Vector3 max) => .new(
-    x.clamp(min.x, max.x).toDouble(),
+    x.clamp(min.x, max.x).toDouble(), //
     y.clamp(min.y, max.y).toDouble(),
     z.clamp(min.z, max.z).toDouble(),
   );
@@ -246,17 +267,17 @@ class Vector3 with _Vector3 {
   @override
   final double z;
 
-  /// Construct a new vector with the specified values.
+  /// Create a new vector with the given values.
   const Vector3(this.x, this.y, this.z);
 
-  /// Splat [value] into all lanes of the vector.
+  /// Create a new vector with all components set to [value].
   const Vector3.all(double value) : x = value, y = value, z = value;
 
-  /// Casts [x], [y], and [z] to doubles.
+  /// Create a new vector from [x], [y], and [z], cast to doubles.
   factory Vector3.cast(num x, num y, num z) =>
       .new(x.toDouble(), y.toDouble(), z.toDouble());
 
-  /// Copy of [other].
+  /// Create a new vector as a copy of [other].
   factory Vector3.copy(Vector3 other) => .new(other.x, other.y, other.z);
 
   /// Canonical zero vector.
@@ -273,6 +294,13 @@ class Vector3 with _Vector3 {
   static Vector3 max(Vector3 a, Vector3 b) =>
       .new(math.max(a.x, b.x), math.max(a.y, b.y), math.max(a.z, b.z));
 
+  /// Linear interpolation from [a] to [b] by [amount].
+  static Vector3 mix(Vector3 a, Vector3 b, double amount) => .new(
+    a.x + amount * (b.x - a.x),
+    a.y + amount * (b.y - a.y),
+    a.z + amount * (b.z - a.z),
+  );
+
   /// Clone of this.
   Vector3 clone() => .copy(this);
 }
@@ -287,27 +315,27 @@ class MVector3 with _Vector3 implements Vector3 {
   @override
   double z;
 
-  /// Construct a new vector with the specified values.
+  /// Create a new vector with the given values.
   MVector3(this.x, this.y, this.z);
 
-  /// Zero vector.
+  /// Create a new vector with all components set to zero.
   MVector3.zero() : x = 0, y = 0, z = 0;
 
-  /// Splat [value] into all lanes of the vector.
+  /// Create a new vector with all components set to [value].
   MVector3.all(double value) : x = value, y = value, z = value;
 
-  /// Casts [x], [y], and [z] to doubles.
+  /// Create a new vector from [x], [y], and [z], cast to doubles.
   factory MVector3.cast(num x, num y, num z) =>
       .new(x.toDouble(), y.toDouble(), z.toDouble());
 
-  /// Copy of [other].
+  /// Create a new vector as a copy of [other].
   factory MVector3.copy(Vector3 other) => .new(other.x, other.y, other.z);
 
   /// Clone of this.
   @override
   MVector3 clone() => .copy(this);
 
-  /// Set the component of the vector at the index [index].
+  /// Sets the component of the vector at the index [index].
   void operator []=(int index, double value) {
     switch (index) {
       case 0:
@@ -324,122 +352,145 @@ class MVector3 with _Vector3 implements Vector3 {
     }
   }
 
-  /// Set the values by copying them from [other].
+  /// Sets the values of this by copying them from [other].
   void setFrom(Vector3 other) {
     x = other.x;
     y = other.y;
     z = other.z;
   }
 
-  /// Set the values of the vector.
+  /// Sets the values of this.
   void setValues(double x, double y, double z) {
     this.x = x;
     this.y = y;
     this.z = z;
   }
 
-  /// Splat [value] into all lanes of the vector.
+  /// Sets all components of this to zero.
+  void setZero() {
+    x = 0;
+    y = 0;
+    z = 0;
+  }
+
+  /// Sets all components of this to [value].
   void splat(double value) {
     x = value;
     y = value;
     z = value;
   }
 
-  /// Negate.
+  /// Negates this.
   void negate() {
     x = -x;
     y = -y;
     z = -z;
   }
 
-  /// Absolute value.
+  /// Sets this to the component-wise absolute value of itself.
   void absolute() {
     x = x.abs();
     y = y.abs();
     z = z.abs();
   }
 
-  /// Floor entries in this.
+  /// Floors each component of this.
   void floor() {
     x = x.floorToDouble();
     y = y.floorToDouble();
     z = z.floorToDouble();
   }
 
-  /// Ceil entries in this.
+  /// Ceils each component of this.
   void ceil() {
     x = x.ceilToDouble();
     y = y.ceilToDouble();
     z = z.ceilToDouble();
   }
 
-  /// Round entries in this.
+  /// Rounds each component of this.
   void round() {
     x = x.roundToDouble();
     y = y.roundToDouble();
     z = z.roundToDouble();
   }
 
-  /// Round entries in this towards zero.
+  /// Rounds each component of this towards zero.
   void roundToZero() {
     x = x < 0 ? x.ceilToDouble() : x.floorToDouble();
     y = y < 0 ? y.ceilToDouble() : y.floorToDouble();
     z = z < 0 ? z.ceilToDouble() : z.floorToDouble();
   }
 
-  /// Add [other] to this.
+  /// Adds [other] to this.
   void add(Vector3 other) {
     x += other.x;
     y += other.y;
     z += other.z;
   }
 
-  /// Subtract [other] from this.
+  /// Subtracts [other] from this.
   void subtract(Vector3 other) {
     x -= other.x;
     y -= other.y;
     z -= other.z;
   }
 
-  /// Scale this by [value].
+  /// Scales this by [value].
   void scale(double value) {
     x *= value;
     y *= value;
     z *= value;
   }
 
-  /// Multiply entries in this with entries in [other].
+  /// Multiplies each component of this by the matching component of [other].
   void multiply(Vector3 other) {
     x *= other.x;
     y *= other.y;
     z *= other.z;
   }
 
-  /// Set this to the component-wise maximum of this and [other].
+  /// Divides each component of this by the matching component of [other].
+  void divide(Vector3 other) {
+    x /= other.x;
+    y /= other.y;
+    z /= other.z;
+  }
+
+  /// Sets this to the component-wise maximum of this and [other].
   void max(Vector3 other) {
     x = math.max(x, other.x);
     y = math.max(y, other.y);
     z = math.max(z, other.z);
   }
 
-  /// Set this to the component-wise minimum of this and [other].
+  /// Sets this to the component-wise minimum of this and [other].
   void min(Vector3 other) {
     x = math.min(x, other.x);
     y = math.min(y, other.y);
     z = math.min(z, other.z);
   }
 
-  /// Add [other] scaled by [value] to this.
+  /// Sets this to the linear interpolation from this to [other] by [amount].
+  void mix(Vector3 other, double amount) {
+    x += amount * (other.x - x);
+    y += amount * (other.y - y);
+    z += amount * (other.z - z);
+  }
+
+  /// Adds [other] scaled by [value] to this.
   void addScaled(Vector3 other, double value) {
     x += other.x * value;
     y += other.y * value;
     z += other.z * value;
   }
 
-  /// Normalize this. Returns the length of the vector before normalization.
+  /// Normalizes this. Returns the length of the vector before normalization.
   double normalize() {
     final length = this.length;
-    if (length == 0) return 0;
+    if (length == 0) {
+      return 0;
+    }
 
     final scale = 1 / length;
     x *= scale;
@@ -448,7 +499,7 @@ class MVector3 with _Vector3 implements Vector3 {
     return length;
   }
 
-  /// Reflect this.
+  /// Reflects this.
   void reflect(Vector3 normal) {
     final dotProduct = normal.dot(this) * 2;
     x -= normal.x * dotProduct;
@@ -456,52 +507,52 @@ class MVector3 with _Vector3 implements Vector3 {
     z -= normal.z * dotProduct;
   }
 
-  /// Clamp each component of this between [range.x] and [range.y].
+  /// Clamps each component of this between [range.x] and [range.y].
   void clamp(Vector2 range) {
     x = x.clamp(range.x, range.y).toDouble();
     y = y.clamp(range.x, range.y).toDouble();
     z = z.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp the x component of this between [range.x] and [range.y].
+  /// Clamps the x component of this between [range.x] and [range.y].
   void clampX(Vector2 range) {
     x = x.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp the y component of this between [range.x] and [range.y].
+  /// Clamps the y component of this between [range.x] and [range.y].
   void clampY(Vector2 range) {
     y = y.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp the z component of this between [range.x] and [range.y].
+  /// Clamps the z component of this between [range.x] and [range.y].
   void clampZ(Vector2 range) {
     z = z.clamp(range.x, range.y).toDouble();
   }
 
-  /// Clamp each component of this between [min] and [max].
+  /// Clamps each component of this between [min] and [max].
   void clampTo(double min, double max) {
     x = x.clamp(min, max).toDouble();
     y = y.clamp(min, max).toDouble();
     z = z.clamp(min, max).toDouble();
   }
 
-  /// Clamp the x component of this between [min] and [max].
+  /// Clamps the x component of this between [min] and [max].
   void clampToX(double min, double max) {
     x = x.clamp(min, max).toDouble();
   }
 
-  /// Clamp the y component of this between [min] and [max].
+  /// Clamps the y component of this between [min] and [max].
   void clampToY(double min, double max) {
     y = y.clamp(min, max).toDouble();
   }
 
-  /// Clamp the z component of this between [min] and [max].
+  /// Clamps the z component of this between [min] and [max].
   void clampToZ(double min, double max) {
     z = z.clamp(min, max).toDouble();
   }
 
-  /// Clamp each component of this between the matching components of [min] and
-  /// [max].
+  /// Clamps each component of this between the matching components of [min]
+  /// and [max].
   void clampBetween(Vector3 min, Vector3 max) {
     x = x.clamp(min.x, max.x).toDouble();
     y = y.clamp(min.y, max.y).toDouble();
@@ -530,7 +581,7 @@ class MVector3 with _Vector3 implements Vector3 {
     this.z = (x * matrix[6]) + (y * matrix[7]) + (z * matrix[8]);
   }
 
-  /// Transforms this by [matrix] in place.
+  /// Transforms this by [matrix].
   void transform(Matrix4 matrix) {
     final x = this.x;
     final y = this.y;
@@ -540,8 +591,7 @@ class MVector3 with _Vector3 implements Vector3 {
     this.z = (matrix[2] * x) + (matrix[6] * y) + (matrix[10] * z) + matrix[14];
   }
 
-  /// Rotates this by the upper-left 3x3 of [matrix], ignoring translation, in
-  /// place.
+  /// Rotates this by the upper-left 3x3 of [matrix], ignoring translation.
   void rotate(Matrix4 matrix) {
     final x = this.x;
     final y = this.y;

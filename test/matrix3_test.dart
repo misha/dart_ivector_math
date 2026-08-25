@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:ivector_math/ivector_math.dart';
 import 'package:test/test.dart';
@@ -58,7 +58,7 @@ void main() {
 
     test('creates a rotation around the x axis', () {
       expectMatrix3(
-        Matrix3.rotationX(pi / 2), //
+        Matrix3.rotationX(math.pi / 2), //
         [1, 0, 0],
         [0, 0, 1],
         [0, -1, 0],
@@ -67,7 +67,7 @@ void main() {
 
     test('creates a rotation around the y axis', () {
       expectMatrix3(
-        Matrix3.rotationY(pi / 2), //
+        Matrix3.rotationY(math.pi / 2), //
         [0, 0, -1],
         [0, 1, 0],
         [1, 0, 0],
@@ -76,11 +76,43 @@ void main() {
 
     test('creates a rotation around the z axis', () {
       expectMatrix3(
-        Matrix3.rotationZ(pi / 2), //
+        Matrix3.rotationZ(math.pi / 2), //
         [0, 1, 0],
         [-1, 0, 0],
         [0, 0, 1],
       );
+    });
+
+    test('creates a translation from a vector', () {
+      expectMatrix3(Matrix3.translation(Vector2(1, 2)), [1, 0, 0], [0, 1, 0], [
+        1,
+        2,
+        1,
+      ]);
+    });
+
+    test('creates a translation from values', () {
+      expectMatrix3(Matrix3.translationValues(1, 2), [1, 0, 0], [0, 1, 0], [
+        1,
+        2,
+        1,
+      ]);
+    });
+
+    test('creates a scale from a vector', () {
+      expectMatrix3(Matrix3.diagonal2(Vector2(2, 3)), [2, 0, 0], [0, 3, 0], [
+        0,
+        0,
+        1,
+      ]);
+    });
+
+    test('creates a scale from values', () {
+      expectMatrix3(Matrix3.diagonal2Values(2, 3), [2, 0, 0], [0, 3, 0], [
+        0,
+        0,
+        1,
+      ]);
     });
 
     test('reads components by index', () {
@@ -113,13 +145,13 @@ void main() {
     });
 
     test('detects the identity matrix', () {
-      expect(Matrix3.identity.isIdentity(), isTrue);
-      expect(Matrix3.zero.isIdentity(), isFalse);
+      expect(Matrix3.identity.isIdentity, isTrue);
+      expect(Matrix3.zero.isIdentity, isFalse);
     });
 
     test('detects the zero matrix', () {
-      expect(Matrix3.zero.isZero(), isTrue);
-      expect(Matrix3.identity.isZero(), isFalse);
+      expect(Matrix3.zero.isZero, isTrue);
+      expect(Matrix3.identity.isZero, isFalse);
     });
 
     test('computes the infinity norm', () {
@@ -132,6 +164,12 @@ void main() {
 
       expect(approximate.relativeError(correct), closeTo(0.1, 0.0000001));
       expect(approximate.absoluteError(correct), closeTo(0.1, 0.0000001));
+    });
+
+    test('reads the translation', () {
+      final matrix = Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      expectVector2(matrix.getTranslation(), 7, 8);
     });
 
     test('copies into an array', () {
@@ -166,6 +204,56 @@ void main() {
 
       expectMatrix3(scaled, [2, 4, 6], [8, 10, 12], [14, 16, 18]);
       expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [7, 8, 9]);
+    });
+
+    test('creates a copy scaled by a vector without changing the source', () {
+      final matrix = Matrix3.translationValues(1, 2);
+
+      final scaled = matrix.scaledByVector2(Vector2(2, 3));
+
+      expectMatrix3(scaled, [2, 0, 0], [0, 3, 0], [1, 2, 1]);
+      expectMatrix3(matrix, [1, 0, 0], [0, 1, 0], [1, 2, 1]);
+    });
+
+    test('creates a translated copy without changing the source', () {
+      final matrix = Matrix3.diagonal2Values(2, 3);
+
+      final translated = matrix.translated(Vector2(1, 2));
+
+      expectMatrix3(translated, [2, 0, 0], [0, 3, 0], [2, 6, 1]);
+      expectMatrix3(matrix, [2, 0, 0], [0, 3, 0], [0, 0, 1]);
+    });
+
+    test('creates a left-translated copy without changing the source', () {
+      final matrix = Matrix3.diagonal2Values(2, 3);
+
+      final translated = matrix.leftTranslated(Vector2(1, 2));
+
+      expectMatrix3(translated, [2, 0, 0], [0, 3, 0], [1, 2, 1]);
+      expectMatrix3(matrix, [2, 0, 0], [0, 3, 0], [0, 0, 1]);
+    });
+
+    test('creates rotated copies without changing the source', () {
+      final matrix = Matrix3.translationValues(1, 2);
+
+      expectMatrix3(matrix.rotatedZ(math.pi / 2), [0, 1, 0], [-1, 0, 0], [
+        1,
+        2,
+        1,
+      ]);
+      expectMatrix3(
+        Matrix3.identity.rotatedX(math.pi / 2),
+        [1, 0, 0],
+        [0, 0, 1],
+        [0, -1, 0],
+      );
+      expectMatrix3(
+        Matrix3.identity.rotatedY(math.pi / 2),
+        [0, 0, -1],
+        [0, 1, 0],
+        [1, 0, 0],
+      );
+      expectMatrix3(matrix, [1, 0, 0], [0, 1, 0], [1, 2, 1]);
     });
 
     test(
@@ -206,21 +294,21 @@ void main() {
     );
 
     test('creates a transpose-multiplied copy without changing the source', () {
-      final matrix = Matrix3.rotationZ(pi / 3);
+      final matrix = Matrix3.rotationZ(math.pi / 3);
 
       final result = matrix.transposeMultiplied(matrix);
 
       expectMatrix3(result, [1, 0, 0], [0, 1, 0], [0, 0, 1]);
-      expect(matrix, Matrix3.rotationZ(pi / 3));
+      expect(matrix, Matrix3.rotationZ(math.pi / 3));
     });
 
     test('creates a multiply-transposed copy without changing the source', () {
-      final matrix = Matrix3.rotationZ(pi / 4);
+      final matrix = Matrix3.rotationZ(math.pi / 4);
 
       final result = matrix.multiplyTransposed(matrix);
 
       expectMatrix3(result, [1, 0, 0], [0, 1, 0], [0, 0, 1]);
-      expect(matrix, Matrix3.rotationZ(pi / 4));
+      expect(matrix, Matrix3.rotationZ(math.pi / 4));
     });
 
     test('creates a scaled adjugate copy without changing the source', () {
@@ -337,7 +425,7 @@ void main() {
 
     test('creates a rotation around the x axis', () {
       expectMatrix3(
-        MMatrix3.rotationX(pi / 2), //
+        MMatrix3.rotationX(math.pi / 2), //
         [1, 0, 0],
         [0, 0, 1],
         [0, -1, 0],
@@ -346,7 +434,7 @@ void main() {
 
     test('creates a rotation around the y axis', () {
       expectMatrix3(
-        MMatrix3.rotationY(pi / 2), //
+        MMatrix3.rotationY(math.pi / 2), //
         [0, 0, -1],
         [0, 1, 0],
         [1, 0, 0],
@@ -355,11 +443,43 @@ void main() {
 
     test('creates a rotation around the z axis', () {
       expectMatrix3(
-        MMatrix3.rotationZ(pi / 2), //
+        MMatrix3.rotationZ(math.pi / 2), //
         [0, 1, 0],
         [-1, 0, 0],
         [0, 0, 1],
       );
+    });
+
+    test('creates a translation from a vector', () {
+      expectMatrix3(MMatrix3.translation(Vector2(1, 2)), [1, 0, 0], [0, 1, 0], [
+        1,
+        2,
+        1,
+      ]);
+    });
+
+    test('creates a translation from values', () {
+      expectMatrix3(MMatrix3.translationValues(1, 2), [1, 0, 0], [0, 1, 0], [
+        1,
+        2,
+        1,
+      ]);
+    });
+
+    test('creates a scale from a vector', () {
+      expectMatrix3(MMatrix3.diagonal2(Vector2(2, 3)), [2, 0, 0], [0, 3, 0], [
+        0,
+        0,
+        1,
+      ]);
+    });
+
+    test('creates a scale from values', () {
+      expectMatrix3(MMatrix3.diagonal2Values(2, 3), [2, 0, 0], [0, 3, 0], [
+        0,
+        0,
+        1,
+      ]);
     });
 
     test('clones without sharing storage', () {
@@ -392,8 +512,8 @@ void main() {
       expect(matrix.entry(0, 1), 4);
       expect(matrix.determinant(), 0);
       expect(matrix.trace(), 15);
-      expect(matrix.isIdentity(), isFalse);
-      expect(matrix.isZero(), isFalse);
+      expect(matrix.isIdentity, isFalse);
+      expect(matrix.isZero, isFalse);
       expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [7, 8, 9]);
     });
 
@@ -483,10 +603,26 @@ void main() {
       expectMatrix3(matrix, [5, 0, 0], [0, 5, 0], [0, 0, 5]);
     });
 
+    test('sets the upper-left diagonal from a vector in place', () {
+      final matrix = MMatrix3.identity();
+
+      matrix.setDiagonal2(Vector2(2, 3));
+
+      expectMatrix3(matrix, [2, 0, 0], [0, 3, 0], [0, 0, 1]);
+    });
+
+    test('sets the upper-left diagonal from values in place', () {
+      final matrix = MMatrix3.identity();
+
+      matrix.setDiagonal2Values(2, 3);
+
+      expectMatrix3(matrix, [2, 0, 0], [0, 3, 0], [0, 0, 1]);
+    });
+
     test('sets a rotation around the x axis in place', () {
       final matrix = MMatrix3.zero();
 
-      matrix.setRotationX(pi / 2);
+      matrix.setRotationX(math.pi / 2);
 
       expectMatrix3(matrix, [1, 0, 0], [0, 0, 1], [0, -1, 0]);
     });
@@ -494,7 +630,7 @@ void main() {
     test('sets a rotation around the y axis in place', () {
       final matrix = MMatrix3.zero();
 
-      matrix.setRotationY(pi / 2);
+      matrix.setRotationY(math.pi / 2);
 
       expectMatrix3(matrix, [0, 0, -1], [0, 1, 0], [1, 0, 0]);
     });
@@ -502,9 +638,25 @@ void main() {
     test('sets a rotation around the z axis in place', () {
       final matrix = MMatrix3.zero();
 
-      matrix.setRotationZ(pi / 2);
+      matrix.setRotationZ(math.pi / 2);
 
       expectMatrix3(matrix, [0, 1, 0], [-1, 0, 0], [0, 0, 1]);
+    });
+
+    test('sets the translation from a vector in place', () {
+      final matrix = MMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      matrix.setTranslation(Vector2(1, 2));
+
+      expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [1, 2, 9]);
+    });
+
+    test('sets the translation from values in place', () {
+      final matrix = MMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      matrix.setTranslationRaw(1, 2);
+
+      expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [1, 2, 9]);
     });
 
     test('transposes in place', () {
@@ -529,6 +681,54 @@ void main() {
       matrix.scale(2);
 
       expectMatrix3(matrix, [2, 4, 6], [8, 10, 12], [14, 16, 18]);
+    });
+
+    test('scales by a vector in place', () {
+      final matrix = MMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      matrix.scaleByVector2(Vector2(2, 3));
+
+      expectMatrix3(matrix, [2, 4, 6], [12, 15, 18], [7, 8, 9]);
+    });
+
+    test('translates in place', () {
+      final matrix = MMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      matrix.translate(Vector2(1, 1));
+
+      expectMatrix3(matrix, [1, 2, 3], [4, 5, 6], [12, 15, 18]);
+    });
+
+    test('left-translates in place', () {
+      final matrix = MMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      matrix.leftTranslate(Vector2(1, 2));
+
+      expectMatrix3(matrix, [4, 8, 3], [10, 17, 6], [16, 26, 9]);
+    });
+
+    test('rotates around the x axis in place', () {
+      final matrix = MMatrix3.identity();
+
+      matrix.rotateX(math.pi / 2);
+
+      expectMatrix3(matrix, [1, 0, 0], [0, 0, 1], [0, -1, 0]);
+    });
+
+    test('rotates around the y axis in place', () {
+      final matrix = MMatrix3.identity();
+
+      matrix.rotateY(math.pi / 2);
+
+      expectMatrix3(matrix, [0, 0, -1], [0, 1, 0], [1, 0, 0]);
+    });
+
+    test('rotates around the z axis in place, keeping the translation', () {
+      final matrix = MMatrix3.translationValues(1, 2);
+
+      matrix.rotateZ(math.pi / 2);
+
+      expectMatrix3(matrix, [0, 1, 0], [-1, 0, 0], [1, 2, 1]);
     });
 
     test('adds in place', () {
@@ -564,7 +764,7 @@ void main() {
     });
 
     test('multiplies by itself safely', () {
-      final matrix = MMatrix3.rotationZ(pi / 2);
+      final matrix = MMatrix3.rotationZ(math.pi / 2);
 
       matrix.multiply(matrix);
 
@@ -580,7 +780,7 @@ void main() {
     });
 
     test('premultiplies by itself safely', () {
-      final matrix = MMatrix3.rotationZ(pi / 2);
+      final matrix = MMatrix3.rotationZ(math.pi / 2);
 
       matrix.premultiply(matrix);
 
@@ -588,7 +788,7 @@ void main() {
     });
 
     test('transpose-multiplies an orthogonal matrix back to the identity', () {
-      final matrix = MMatrix3.rotationZ(pi / 3);
+      final matrix = MMatrix3.rotationZ(math.pi / 3);
       final other = MMatrix3.copy(matrix);
 
       matrix.transposeMultiply(other);
@@ -599,7 +799,7 @@ void main() {
     test(
       'multiplies by a transposed orthogonal matrix back to the identity',
       () {
-        final matrix = MMatrix3.rotationZ(pi / 4);
+        final matrix = MMatrix3.rotationZ(math.pi / 4);
         final other = MMatrix3.copy(matrix);
 
         matrix.multiplyTranspose(other);

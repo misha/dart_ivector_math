@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:ivector_math/ivector_math.dart';
 import 'package:test/test.dart';
@@ -111,7 +111,7 @@ void main() {
 
     test('creates a rotation around the x axis', () {
       expectMatrix4(
-        Matrix4.rotationX(pi / 2),
+        Matrix4.rotationX(math.pi / 2),
         [1, 0, 0, 0],
         [0, 0, 1, 0],
         [0, -1, 0, 0],
@@ -121,7 +121,7 @@ void main() {
 
     test('creates a rotation around the y axis', () {
       expectMatrix4(
-        Matrix4.rotationY(pi / 2),
+        Matrix4.rotationY(math.pi / 2),
         [0, 0, -1, 0],
         [0, 1, 0, 0],
         [1, 0, 0, 0],
@@ -131,7 +131,7 @@ void main() {
 
     test('creates a rotation around the z axis', () {
       expectMatrix4(
-        Matrix4.rotationZ(pi / 2),
+        Matrix4.rotationZ(math.pi / 2),
         [0, 1, 0, 0],
         [-1, 0, 0, 0],
         [0, 0, 1, 0],
@@ -256,13 +256,13 @@ void main() {
     });
 
     test('detects the identity matrix', () {
-      expect(Matrix4.identity.isIdentity(), isTrue);
-      expect(Matrix4.zero.isIdentity(), isFalse);
+      expect(Matrix4.identity.isIdentity, isTrue);
+      expect(Matrix4.zero.isIdentity, isFalse);
     });
 
     test('detects the zero matrix', () {
-      expect(Matrix4.zero.isZero(), isTrue);
-      expect(Matrix4.identity.isZero(), isFalse);
+      expect(Matrix4.zero.isZero, isTrue);
+      expect(Matrix4.identity.isZero, isFalse);
     });
 
     test('computes the infinity norm', () {
@@ -303,7 +303,7 @@ void main() {
         // dart format on
       );
 
-      expectVector3(matrix.translation, 13, 14, 15);
+      expectVector3(matrix.getTranslation(), 13, 14, 15);
     });
 
     test('reads the rotation', () {
@@ -316,7 +316,7 @@ void main() {
         // dart format on
       );
 
-      expectMatrix3(matrix.rotation, [1, 2, 3], [5, 6, 7], [9, 10, 11]);
+      expectMatrix3(matrix.getRotation(), [1, 2, 3], [5, 6, 7], [9, 10, 11]);
     });
 
     test('copies into an array', () {
@@ -409,7 +409,7 @@ void main() {
     test('creates a copy scaled by a vector without changing the source', () {
       final matrix = Matrix4.translationValues(1, 2, 3);
 
-      final scaled = matrix.scaledBy(Vector3(2, 3, 4));
+      final scaled = matrix.scaledByVector3(Vector3(2, 3, 4));
 
       expectMatrix4(
         scaled,
@@ -447,6 +447,60 @@ void main() {
         [0, 3, 0, 0],
         [0, 0, 4, 0],
         [0, 0, 0, 1],
+      );
+    });
+
+    test('creates a left-translated copy without changing the source', () {
+      final matrix = Matrix4.diagonal3Values(2, 3, 4);
+
+      final translated = matrix.leftTranslated(Vector3(1, 2, 3));
+
+      expectMatrix4(
+        translated,
+        [2, 0, 0, 0],
+        [0, 3, 0, 0],
+        [0, 0, 4, 0],
+        [1, 2, 3, 1],
+      );
+      expectMatrix4(
+        matrix,
+        [2, 0, 0, 0],
+        [0, 3, 0, 0],
+        [0, 0, 4, 0],
+        [0, 0, 0, 1],
+      );
+    });
+
+    test('creates rotated copies without changing the source', () {
+      final matrix = Matrix4.translationValues(1, 2, 3);
+
+      expectMatrix4(
+        matrix.rotatedX(math.pi / 2),
+        [1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, -1, 0, 0],
+        [1, 2, 3, 1],
+      );
+      expectMatrix4(
+        matrix.rotatedY(math.pi / 2),
+        [0, 0, -1, 0],
+        [0, 1, 0, 0],
+        [1, 0, 0, 0],
+        [1, 2, 3, 1],
+      );
+      expectMatrix4(
+        matrix.rotatedZ(math.pi / 2),
+        [0, 1, 0, 0],
+        [-1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [1, 2, 3, 1],
+      );
+      expectMatrix4(
+        matrix,
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [1, 2, 3, 1],
       );
     });
 
@@ -541,7 +595,8 @@ void main() {
     );
 
     test('creates a transpose-multiplied copy without changing the source', () {
-      final matrix = Matrix4.rotationZ(pi / 3);
+      final matrix = Matrix4.rotationZ(math.pi / 3);
+
       final result = matrix.transposeMultiplied(matrix);
 
       expectMatrix4(
@@ -552,11 +607,12 @@ void main() {
         [0, 0, 0, 1],
       );
 
-      expect(matrix, Matrix4.rotationZ(pi / 3));
+      expect(matrix, Matrix4.rotationZ(math.pi / 3));
     });
 
     test('creates a multiply-transposed copy without changing the source', () {
-      final matrix = Matrix4.rotationZ(pi / 4);
+      final matrix = Matrix4.rotationZ(math.pi / 4);
+
       final result = matrix.multiplyTransposed(matrix);
 
       expectMatrix4(
@@ -567,7 +623,7 @@ void main() {
         [0, 0, 0, 1],
       );
 
-      expect(matrix, Matrix4.rotationZ(pi / 4));
+      expect(matrix, Matrix4.rotationZ(math.pi / 4));
     });
 
     test('creates a scaled adjugate copy without changing the source', () {
@@ -905,7 +961,7 @@ void main() {
 
     test('creates a rotation around the x axis', () {
       expectMatrix4(
-        MMatrix4.rotationX(pi / 2),
+        MMatrix4.rotationX(math.pi / 2),
         [1, 0, 0, 0],
         [0, 0, 1, 0],
         [0, -1, 0, 0],
@@ -915,7 +971,7 @@ void main() {
 
     test('creates a rotation around the y axis', () {
       expectMatrix4(
-        MMatrix4.rotationY(pi / 2),
+        MMatrix4.rotationY(math.pi / 2),
         [0, 0, -1, 0],
         [0, 1, 0, 0],
         [1, 0, 0, 0],
@@ -925,7 +981,7 @@ void main() {
 
     test('creates a rotation around the z axis', () {
       expectMatrix4(
-        MMatrix4.rotationZ(pi / 2),
+        MMatrix4.rotationZ(math.pi / 2),
         [0, 1, 0, 0],
         [-1, 0, 0, 0],
         [0, 0, 1, 0],
@@ -1008,10 +1064,10 @@ void main() {
       final correct = MMatrix4.identity();
       final approximate = MMatrix4(
         // dart format off
-        1.1, 0, 0, 0,
-        0,   1, 0, 0,
-        0,   0, 1, 0,
-        0,   0, 0, 1,
+        1.1, 0,   0,   0,
+        0,   1,   0,   0,
+        0,   0,   1,   0,
+        0,   0,   0,   1,
         // dart format on
       );
 
@@ -1037,10 +1093,10 @@ void main() {
       expect(matrix.entry(0, 1), 5);
       expect(matrix.determinant(), 0);
       expect(matrix.trace(), 34);
-      expect(matrix.isIdentity(), isFalse);
-      expect(matrix.isZero(), isFalse);
-      expectVector3(matrix.translation, 13, 14, 15);
-      expectMatrix3(matrix.rotation, [1, 2, 3], [5, 6, 7], [9, 10, 11]);
+      expect(matrix.isIdentity, isFalse);
+      expect(matrix.isZero, isFalse);
+      expectVector3(matrix.getTranslation(), 13, 14, 15);
+      expectMatrix3(matrix.getRotation(), [1, 2, 3], [5, 6, 7], [9, 10, 11]);
       expectMatrix4(
         matrix,
         [1, 2, 3, 4],
@@ -1236,47 +1292,84 @@ void main() {
       );
     });
 
-    test('sets a rotation around the x axis in place', () {
-      final matrix = MMatrix4.zero();
+    test('sets the upper-left diagonal from a vector in place', () {
+      final matrix = MMatrix4.identity();
 
-      matrix.setRotationX(pi / 2);
+      matrix.setDiagonal3(Vector3(2, 3, 4));
 
       expectMatrix4(
         matrix,
-        [1, 0, 0, 0],
-        [0, 0, 1, 0],
-        [0, -1, 0, 0],
+        [2, 0, 0, 0],
+        [0, 3, 0, 0],
+        [0, 0, 4, 0],
         [0, 0, 0, 1],
       );
     });
 
-    test('sets a rotation around the y axis in place', () {
-      final matrix = MMatrix4.zero();
+    test('sets the upper-left diagonal from values in place', () {
+      final matrix = MMatrix4.identity();
 
-      matrix.setRotationY(pi / 2);
+      matrix.setDiagonal3Values(2, 3, 4);
 
       expectMatrix4(
         matrix,
-        [0, 0, -1, 0],
-        [0, 1, 0, 0],
-        [1, 0, 0, 0],
+        [2, 0, 0, 0],
+        [0, 3, 0, 0],
+        [0, 0, 4, 0],
         [0, 0, 0, 1],
       );
     });
 
-    test('sets a rotation around the z axis in place', () {
-      final matrix = MMatrix4.zero();
+    test(
+      'sets a rotation around the x axis in place, keeping the translation',
+      () {
+        final matrix = MMatrix4.translationValues(1, 2, 3);
 
-      matrix.setRotationZ(pi / 2);
+        matrix.setRotationX(math.pi / 2);
 
-      expectMatrix4(
-        matrix,
-        [0, 1, 0, 0],
-        [-1, 0, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1],
-      );
-    });
+        expectMatrix4(
+          matrix,
+          [1, 0, 0, 0],
+          [0, 0, 1, 0],
+          [0, -1, 0, 0],
+          [1, 2, 3, 1],
+        );
+      },
+    );
+
+    test(
+      'sets a rotation around the y axis in place, keeping the translation',
+      () {
+        final matrix = MMatrix4.translationValues(1, 2, 3);
+
+        matrix.setRotationY(math.pi / 2);
+
+        expectMatrix4(
+          matrix,
+          [0, 0, -1, 0],
+          [0, 1, 0, 0],
+          [1, 0, 0, 0],
+          [1, 2, 3, 1],
+        );
+      },
+    );
+
+    test(
+      'sets a rotation around the z axis in place, keeping the translation',
+      () {
+        final matrix = MMatrix4.translationValues(1, 2, 3);
+
+        matrix.setRotationZ(math.pi / 2);
+
+        expectMatrix4(
+          matrix,
+          [0, 1, 0, 0],
+          [-1, 0, 0, 0],
+          [0, 0, 1, 0],
+          [1, 2, 3, 1],
+        );
+      },
+    );
 
     test('sets the translation from a vector in place', () {
       final matrix = MMatrix4(
@@ -1322,6 +1415,7 @@ void main() {
 
     test('sets the rotation in place, keeping the translation', () {
       final matrix = MMatrix4.translationValues(1, 2, 3);
+
       matrix.setRotation(Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
       expectMatrix4(
@@ -1406,7 +1500,7 @@ void main() {
         // dart format on
       );
 
-      matrix.scaleBy(Vector3(2, 3, 4));
+      matrix.scaleByVector3(Vector3(2, 3, 4));
 
       expectMatrix4(
         matrix,
@@ -1435,6 +1529,69 @@ void main() {
         [5, 6, 7, 8],
         [9, 10, 11, 12],
         [28, 32, 36, 40],
+      );
+    });
+
+    test('left-translates in place', () {
+      final matrix = MMatrix4(
+        // dart format off
+        1,  2,  3,  4,
+        5,  6,  7,  8,
+        9,  10, 11, 12,
+        13, 14, 15, 16,
+        // dart format on
+      );
+
+      matrix.leftTranslate(Vector3(1, 1, 1));
+
+      expectMatrix4(
+        matrix,
+        [5, 6, 7, 4],
+        [13, 14, 15, 8],
+        [21, 22, 23, 12],
+        [29, 30, 31, 16],
+      );
+    });
+
+    test('rotates around the x axis in place', () {
+      final matrix = MMatrix4.identity();
+
+      matrix.rotateX(math.pi / 2);
+
+      expectMatrix4(
+        matrix,
+        [1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, -1, 0, 0],
+        [0, 0, 0, 1],
+      );
+    });
+
+    test('rotates around the y axis in place', () {
+      final matrix = MMatrix4.identity();
+
+      matrix.rotateY(math.pi / 2);
+
+      expectMatrix4(
+        matrix,
+        [0, 0, -1, 0],
+        [0, 1, 0, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 1],
+      );
+    });
+
+    test('rotates around the z axis in place, keeping the translation', () {
+      final matrix = MMatrix4.translationValues(1, 2, 3);
+
+      matrix.rotateZ(math.pi / 2);
+
+      expectMatrix4(
+        matrix,
+        [0, 1, 0, 0],
+        [-1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [1, 2, 3, 1],
       );
     });
 
@@ -1534,7 +1691,7 @@ void main() {
     });
 
     test('multiplies by itself safely', () {
-      final matrix = MMatrix4.rotationZ(pi / 2);
+      final matrix = MMatrix4.rotationZ(math.pi / 2);
 
       matrix.multiply(matrix);
 
@@ -1562,7 +1719,7 @@ void main() {
     });
 
     test('premultiplies by itself safely', () {
-      final matrix = MMatrix4.rotationZ(pi / 2);
+      final matrix = MMatrix4.rotationZ(math.pi / 2);
 
       matrix.premultiply(matrix);
 
@@ -1576,7 +1733,7 @@ void main() {
     });
 
     test('transpose-multiplies an orthogonal matrix back to the identity', () {
-      final matrix = MMatrix4.rotationZ(pi / 3);
+      final matrix = MMatrix4.rotationZ(math.pi / 3);
       final other = MMatrix4.copy(matrix);
 
       matrix.transposeMultiply(other);
@@ -1593,7 +1750,7 @@ void main() {
     test(
       'multiplies by a transposed orthogonal matrix back to the identity',
       () {
-        final matrix = MMatrix4.rotationZ(pi / 4);
+        final matrix = MMatrix4.rotationZ(math.pi / 4);
         final other = MMatrix4.copy(matrix);
 
         matrix.multiplyTranspose(other);
